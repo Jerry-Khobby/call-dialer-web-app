@@ -1,7 +1,11 @@
 import { Component, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { KeypadButtonComponent } from '../../atoms/keypad-button.component';
 
 @Component({
   selector: 'app-keypad',
+  standalone: true,
+  imports: [CommonModule, KeypadButtonComponent],
   templateUrl: './keypad.component.html'
 })
 export class KeypadComponent {
