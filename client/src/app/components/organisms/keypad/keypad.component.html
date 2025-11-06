@@ -1,0 +1,4 @@
+<div class="grid grid-cols-3 gap-4 place-items-center">
+  <app-keypad-button *ngFor="let key of keys" [label]="key" (clicked)="onKeyPress($event)">
+  </app-keypad-button>
+</div>

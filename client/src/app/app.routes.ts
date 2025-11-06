@@ -1,3 +1,10 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+import { KeypadPage } from './components/pages/keypad/keypad.page';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'keypad', pathMatch: 'full' },
+  { path: 'keypad', component: KeypadPage },
+  { path: 'contacts', component:KeypadPage },
+  { path: 'recents', component: KeypadPage },
+];
