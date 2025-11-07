@@ -1,0 +1,21 @@
+.pop {
+  animation: popIn 0.18s ease-out;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.cross-icon {
+  font-size: 17px !important; /* Increase the icon size */
+  width: 17px !important;
+  height: 17px !important;
+}

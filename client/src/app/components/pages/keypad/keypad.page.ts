@@ -7,12 +7,24 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-keypad-page',
   standalone: true,
   imports: [CommonModule,MatIconModule, KeypadComponent, TabBar],
-  templateUrl: './keypad.page.html'
+  templateUrl: './keypad.page.html',
+  styleUrl:'./keypad.page.css'
 })
 export class KeypadPage {
   typedNumber = '';
+  isPopping = false;
 
   addDigit(key: string) {
     this.typedNumber += key;
+
+     this.isPopping = true;
+     setTimeout(()=>(this.isPopping=false),180)
   }
+
+  clearLastDigit(){
+    this.typedNumber = this.typedNumber.slice(0,-1);
+  }
+
+ 
+
 }
