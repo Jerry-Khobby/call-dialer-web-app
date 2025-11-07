@@ -3,28 +3,31 @@
 >
   <a
     routerLink="/keypad"
-    routerLinkActive="text-blue-400"
-    class="flex flex-col items-center text-white"
+    routerLinkActive="active-tab"
+    [routerLinkActiveOptions]="{ exact: true }"
+    class="tab-item"
   >
-    <span class="text-xl">🔢</span>
+    <mat-icon fontIcon="dialpad" class="text-2xl"></mat-icon>
     <span class="text-xs">Keypad</span>
   </a>
 
   <a
     routerLink="/contacts"
-    routerLinkActive="text-blue-400"
-    class="flex flex-col items-center text-white"
+    routerLinkActive="active-tab"
+    [routerLinkActiveOptions]="{ exact: true }"
+    class="tab-item"
   >
-    <span class="text-xl">👥</span>
+    <mat-icon fontIcon="contacts" class="text-2xl"></mat-icon>
     <span class="text-xs">Contacts</span>
   </a>
 
   <a
     routerLink="/recents"
-    routerLinkActive="text-blue-400"
-    class="flex flex-col items-center text-white"
+    routerLinkActive="active-tab"
+    [routerLinkActiveOptions]="{ exact: true }"
+    class="tab-item"
   >
-    <span class="text-xl">🕑</span>
+    <mat-icon fontIcon="history" class="text-2xl"></mat-icon>
     <span class="text-xs">Recents</span>
   </a>
 </div>
