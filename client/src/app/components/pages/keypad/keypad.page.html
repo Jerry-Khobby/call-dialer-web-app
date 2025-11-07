@@ -1,12 +1,12 @@
-<div class="flex flex-col items-center justify-center min-h-screen pb-20">
-  <div class="text-3xl mb-6">{{ typedNumber }}</div>
+<div class="flex flex-col items-center justify-center min-h-screen pb-32">
+  <div class="text-4xl tracking-wider mb-8">{{ typedNumber }}</div>
 
   <app-keypad (press)="addDigit($event)"></app-keypad>
 
   <button
-    class="mt-6 w-20 h-20 bg-green-500 rounded-full text-white text-3xl flex items-center justify-center"
+    class="mt-6 w-20 h-20 bg-green-500 rounded-full text-white flex items-center justify-center shadow-lg active:bg-green-600 active:scale-95 transition-transform"
   >
-    📞
+    <mat-icon fontIcon="phone" class="mat-icon-xxl lg-call-icon"></mat-icon>
   </button>
 </div>
 
