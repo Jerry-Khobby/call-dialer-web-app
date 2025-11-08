@@ -9,7 +9,11 @@
 
   <!-- Add Number Area (fixed height) -->
   <div class="h-5 flex items-center justify-center">
-    <span *ngIf="typedNumber" class="text-xs text-blue-300 cursor-pointer tracking-wider mb-3">
+    <span
+      *ngIf="typedNumber"
+      (click)="goToNewContact()"
+      class="text-xs text-blue-300 cursor-pointer tracking-wider mb-3"
+    >
       Add Number
     </span>
   </div>

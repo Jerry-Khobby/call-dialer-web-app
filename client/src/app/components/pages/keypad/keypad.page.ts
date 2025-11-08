@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { KeypadComponent } from '../../organisms/keypad/keypad.component';
 import { TabBar } from '../../organisms/tab-bar/tab-bar';
 import { MatIconModule } from '@angular/material/icon';
+import {Router} from "@angular/router"
 @Component({
   selector: 'app-keypad-page',
   standalone: true,
@@ -11,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrl:'./keypad.page.css'
 })
 export class KeypadPage {
+  constructor(private router:Router){}
   typedNumber = '';
   isPopping = false;
 
@@ -25,6 +27,9 @@ export class KeypadPage {
     this.typedNumber = this.typedNumber.slice(0,-1);
   }
 
- 
+ //I want to defined the function for routing the user 
+goToNewContact() {
+  this.router.navigate(['/new-contact'], { state: { phone: this.typedNumber } });
+}
 
 }

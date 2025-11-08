@@ -1,0 +1,22 @@
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.25s ease-out;
+}
+
+.ios-input {
+  width: 100%;
+  background: #1f1f1f;
+  padding: 12px 14px;
+  border-radius: 10px;
+  color: white;
+  border: 1px solid #333;
+  font-size: 16px;
+}
