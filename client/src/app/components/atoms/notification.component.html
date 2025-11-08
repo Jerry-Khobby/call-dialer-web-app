@@ -1,0 +1,8 @@
+@if(notification()) {
+<div class="notification-container">
+  <div class="notification" [ngClass]="notification()?.severity">
+    {{ notification()?.text }}
+    <img class="close" src="/assets/icons/close.svg" (click)="onClose()" />
+  </div>
+</div>
+}
