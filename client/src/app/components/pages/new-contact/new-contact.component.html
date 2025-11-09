@@ -2,32 +2,41 @@
   <div class="contact-modal animate-slide-up">
     <!-- Header -->
     <div class="w-full flex items-center justify-between px-3 py-2">
-      <span class="text-blue-500 cursor-pointer text-[15px]" (click)="cancel()">Cancel</span>
-      <span class="text-white font-medium text-[16px]">New Contact</span>
-      <span class="text-blue-500 cursor-pointer text-[15px]" (click)="done()">Done</span>
+      <button (click)="cancel()" class="icon-btn">
+        <mat-icon fontIcon="close"></mat-icon>
+      </button>
+
+      <span class="text-white font-medium text-[16px] tracking-wide">New Contact</span>
+
+      <button (click)="done()" class="icon-btn" [disabled]="!firstName.trim()">
+        <mat-icon fontIcon="check"></mat-icon>
+      </button>
     </div>
 
     <!-- Avatar -->
     <div class="flex justify-center mt-4 mb-6">
       <div
-        class="w-28 h-28 rounded-full bg-[#1a1a1c] border border-[#2a2a2d] flex items-center justify-center"
+        class="avatar"
       >
-        <mat-icon fontIcon="person" class="text-[#555] text-5xl"></mat-icon>
+        <mat-icon fontIcon="person" class="text-[#777] text-5xl"></mat-icon>
       </div>
     </div>
 
     <!-- Form -->
     <div class="form-area">
       <div class="form-row">
-        <input type="text" placeholder="First Name" class="form-input" required />
+        <input type="text" placeholder="First Name" class="form-input"
+               [(ngModel)]="firstName" required />
       </div>
 
       <div class="form-row">
-        <input type="text" placeholder="Last Name" class="form-input" />
+        <input type="text" placeholder="Last Name" class="form-input"
+               [(ngModel)]="lastName" />
       </div>
 
       <div class="form-row">
-        <input type="tel" placeholder="Phone" class="form-input" [value]="phone" />
+        <input type="tel" placeholder="Phone" class="form-input"
+               [(ngModel)]="phone" />
       </div>
     </div>
   </div>
