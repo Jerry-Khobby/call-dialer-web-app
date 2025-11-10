@@ -24,7 +24,8 @@
   <div class="relative mt-6 flex justify-center items-center w-full">
     <!-- CALL BUTTON (centered always) -->
     <button
-      class="w-20 h-20 bg-green-500 rounded-full text-white flex items-center justify-center shadow-lg active:bg-green-600 active:scale-95 transition-transform"
+      class="w-20 h-20 bg-green-500 rounded-full text-white flex items-center justify-center shadow-lg active:bg-green-600 active:scale-95 transition-transform cursor-pointer"
+      (click)="callThisNumber()"
     >
       <mat-icon fontIcon="phone" class="text-4xl"></mat-icon>
     </button>

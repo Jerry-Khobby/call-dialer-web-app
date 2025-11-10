@@ -32,4 +32,11 @@ goToNewContact() {
   this.router.navigate(['/new-contact'], { state: { phone: this.typedNumber } });
 }
 
+
+callThisNumber(){
+  if(this.typedNumber.length>=3){
+    this.router.navigate(['/call',this.typedNumber])
+  }
+}
+
 }
