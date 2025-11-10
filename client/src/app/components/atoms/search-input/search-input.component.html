@@ -1,0 +1,13 @@
+<div
+  class="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-xl backdrop-blur-sm border-white/10 w-full max-w-xs"
+>
+  <mat-icon fontIcon="search" class="text-gray-400 text-[0.5rem] leading-none scale-90"></mat-icon>
+
+  <input
+    type="text"
+    placeholder="Search Contacts..."
+    [(ngModel)]="search"
+    (input)="onSearch.emit(search)"
+    class="bg-transparent text-white placeholder-gray-500 outline-none flex-1 text-[14px]"
+  />
+</div>

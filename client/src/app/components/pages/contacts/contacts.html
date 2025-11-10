@@ -1,1 +1,25 @@
-<p>contacts works!</p>
+<div class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
+  <!-- Main Content Container -->
+  <div class="w-[85%] max-w-xs flex flex-col gap-5 rounded-3xl backdrop-blur-md shadow-xl pt-26">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold tracking-wide">Contacts</h2>
+      <button
+        class="bg-blue-500/10 text-blue-400 p-[0.1rem] rounded-full hover:bg-blue-500/20 transition flex justify-center items-center"
+        (click)="addContact()"
+      >
+        <mat-icon fontIcon="add" class="text-sm"></mat-icon>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <app-search-input (onSearch)="filterContacts($event)"></app-search-input>
+
+    <!-- Contact List (scrollable) -->
+    <div class="overflow-y-auto max-h-[60vh] pr-1 custom-scroll">
+      <app-contact-list [contacts]="filteredContacts"></app-contact-list>
+    </div>
+  </div>
+</div>
+
+<app-tab-bar></app-tab-bar>
