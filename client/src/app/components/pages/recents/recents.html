@@ -1,1 +1,45 @@
-<p>recents works!</p>
+<div class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
+  <div class="w-[85%] max-w-xs flex flex-col gap-5 pt-26">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold tracking-wide">Recents</h2>
+    </div>
+
+    <!-- Recents List -->
+    <div class="overflow-y-auto max-h-[60vh] pr-1 custom-scroll">
+      <ul class="space-y-3">
+        <li
+          *ngFor="let r of recents"
+          (click)="startCall(r)"
+          class="flex items-center justify-between px-3 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition cursor-pointer"
+        >
+          <!-- Name + Type -->
+          <div class="flex flex-col">
+            <span class="font-medium" [class.text-red-500]="r.type === 'missed'">
+              {{ r.name }}
+              <span *ngIf="r.count > 1" class="text-gray-400 text-sm"> ({{ r.count }}) </span>
+            </span>
+
+            <span
+              class="text-sm"
+              [ngClass]="{
+                'text-red-500': r.type === 'missed',
+                'text-green-400': r.type === 'incoming',
+                'text-gray-400': r.type === 'outgoing'
+              }"
+            >
+              {{ r.type | titlecase }}
+            </span>
+          </div>
+
+          <!-- Time -->
+          <span class="text-gray-500 text-sm">
+            {{ r.time }}
+          </span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<app-tab-bar></app-tab-bar>

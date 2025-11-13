@@ -1,21 +1,45 @@
 import { Component } from '@angular/core';
-import { RecentsTemplateComponent } from '../../templates/recents-template/recents-template.component';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 import { TabBar } from '../../organisms/tab-bar/tab-bar';
 
 @Component({
-  selector: 'app-recents',
-  template: `<app-recents-template [calls]="recentCalls"></app-recents-template>
-  <app-tab-bar></app-tab-bar>
-  
-  `,
-  imports:[CommonModule,RecentsTemplateComponent,TabBar]
+  selector: 'app-recents-page',
+  standalone: true,
+  styleUrls: ['./recents.css'],
+  imports: [CommonModule, MatIconModule, TabBar],
+  templateUrl: './recents.html',
 })
-export class RecentsComponent {
-  recentCalls = [
-    { id: 1, name: 'John Doe', count: 3, time: '2:15 PM', type: 'answered' },
-    { id: 2, name: 'Sarah Mensah', count: 1, time: '1:04 PM', type: 'missed' },
-    { id: 3, name: 'Michael Aboagye', count: 2, time: '10:42 AM', type: 'answered' },
-    { id: 4, name: 'Peter Okoro', count: 1, time: 'Yesterday', type: 'missed' },
+export class RecentsPage {
+  constructor(private router: Router) {}
+
+  rawRecents = [
+    { name: 'Alice Johnson', type: 'missed', time: '2m ago' },
+    { name: 'Ben Adams', type: 'incoming', time: '10m ago' },
+    { name: 'Chris Smith', type: 'outgoing', time: '1h ago' },
+    { name: 'Daniel White', type: 'missed', time: 'Yesterday' },
+    { name: 'Daniel White', type: 'missed', time: 'Yesterday' },
+    { name: 'Daniel White', type: 'missed', time: 'Yesterday' },
   ];
+
+  recents = this.groupRecents(this.rawRecents);
+
+  groupRecents(list: any[]) {
+    const grouped: any = {};
+
+    list.forEach(item => {
+      if (!grouped[item.name]) {
+        grouped[item.name] = { ...item, count: 1 };
+      } else {
+        grouped[item.name].count++;
+      }
+    });
+
+    return Object.values(grouped);
+  }
+
+  startCall(recent: any) {
+    this.router.navigate(['/call', recent.name]);
+  }
 }
