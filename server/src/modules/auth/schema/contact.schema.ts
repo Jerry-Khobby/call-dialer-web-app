@@ -11,8 +11,8 @@ export class Contact {
   @Prop({ required: true })
   firstName: string;
 
-  @Prop({ required: true })
-  lastName: string;
+  @Prop({ default: '' })
+  lastName: string; // Optional, like on a phone
 
   @Prop({ required: true })
   phoneNumber: string;
