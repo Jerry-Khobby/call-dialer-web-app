@@ -105,8 +105,13 @@ export class KeypadPage {
     } else if (event.key === 'Escape') {
       if (this.showAddOptions()) this.showAddOptions.set(false);
       else this.clearAll();
-    } else if (event.key === 'Enter' && !target.closest('button, a')) {
-      // Enter on a focused button already clicks it; only treat it as "call" elsewhere.
+    } else if (
+      event.key === 'Enter' &&
+      (!target.closest('button, a') || target.closest('[data-keypad-key]'))
+    ) {
+      // Enter calls, even when a digit key kept focus after a click (otherwise it would
+      // "click" that digit again). Other focused buttons and links keep their own Enter.
+      event.preventDefault();
       this.callThisNumber();
     }
   }

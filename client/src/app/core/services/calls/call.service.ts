@@ -85,7 +85,8 @@ export class CallService {
   /** In-call keypad press; a voice provider would send this as a DTMF tone. */
   sendTone(digit: string): void {
     const call = this.#call();
-    if (call?.status === 'connected') this.#patch({ tones: call.tones + digit });
+    const tone = digit === '+' ? '0' : digit; // "+" isn't a DTMF tone; holding 0 still sends 0
+    if (call?.status === 'connected') this.#patch({ tones: call.tones + tone });
   }
 
   #patch(changes: Partial<ActiveCall>): void {
