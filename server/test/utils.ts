@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { Connection } from 'mongoose';
+import { io, Socket } from 'socket.io-client';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
@@ -76,4 +77,41 @@ export function api(app: INestApplication<App>, user: TestUser) {
     patch: (url: string) => auth(request(server).patch(url)),
     delete: (url: string) => auth(request(server).delete(url)),
   };
+}
+
+/** Connects to the calls namespace; resolves once the handshake is accepted. */
+export async function connectSocket(
+  app: INestApplication<App>,
+  token: string,
+): Promise<Socket> {
+  const url = await app.getUrl();
+  const socket = io(`${url}/calls`, {
+    auth: { token },
+    transports: ['websocket'],
+    forceNew: true,
+    reconnection: false,
+  });
+  await new Promise<void>((resolve, reject) => {
+    socket.once('connect', () => resolve());
+    socket.once('connect_error', reject);
+  });
+  return socket;
+}
+
+/** Resolves with the next payload of `event`, or fails after `ms`. */
+export function nextEvent<T = Record<string, unknown>>(
+  socket: Socket,
+  event: string,
+  ms = 3000,
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Timed out waiting for "${event}"`)),
+      ms,
+    );
+    socket.once(event, (payload: T) => {
+      clearTimeout(timer);
+      resolve(payload);
+    });
+  });
 }

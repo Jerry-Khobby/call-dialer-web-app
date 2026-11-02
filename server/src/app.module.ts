@@ -9,6 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HttpThrottlerGuard, JwtAuthGuard } from './modules/auth/guards';
 import { CallsModule } from './modules/calls/calls.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
+import { SignalingModule } from './modules/signaling/signaling.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -29,6 +30,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     ContactsModule,
     CallsModule,
+    SignalingModule,
   ],
   controllers: [AppController],
   providers: [
