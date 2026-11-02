@@ -18,7 +18,12 @@ type Incoming = {
   offer: unknown;
 };
 type Ended = { callId: string; reason: string };
-type ApiCall = { phoneNumber: string; callType: string; duration: number };
+type ApiCall = {
+  phoneNumber: string;
+  contactName?: string;
+  callType: string;
+  duration: number;
+};
 
 const OFFER = { type: 'offer', sdp: 'v=0 fake-offer' };
 const ANSWER = { type: 'answer', sdp: 'v=0 fake-answer' };
@@ -126,12 +131,14 @@ describe('Call signaling (e2e)', () => {
     expect(await history(alice)).toEqual([
       expect.objectContaining({
         phoneNumber: '0242222222',
+        contactName: 'Bob', // Their account name, shown when they aren't a contact
         callType: 'outgoing',
       }),
     ]);
     expect(await history(bob)).toEqual([
       expect.objectContaining({
         phoneNumber: '0241111111',
+        contactName: 'Alice',
         callType: 'incoming',
       }),
     ]);
@@ -156,6 +163,9 @@ describe('Call signaling (e2e)', () => {
       ok: false,
       reason: 'invalid',
     });
+    expect(
+      await send(a, 'call:start', { to: 'not a number', offer: OFFER }),
+    ).toEqual({ ok: false, reason: 'invalid' });
   });
 
   it('logs a missed call when the callee is offline', async () => {
@@ -170,6 +180,7 @@ describe('Call signaling (e2e)', () => {
     expect(await history(bob)).toEqual([
       expect.objectContaining({
         phoneNumber: '0241111111',
+        contactName: 'Alice',
         callType: 'missed',
         duration: 0,
       }),

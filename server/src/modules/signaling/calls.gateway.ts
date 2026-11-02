@@ -12,6 +12,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { Namespace, Socket } from 'socket.io';
 import { JwtPayload } from '../auth/auth.types';
+import { phoneDigits } from '../../common/phone';
 import { CallsService } from '../calls/calls.service';
 import { UsersService } from '../users/users.service';
 import type {
@@ -83,7 +84,12 @@ export class CallsGateway implements OnGatewayInit, OnGatewayDisconnect {
     @ConnectedSocket() socket: CallSocket,
     @MessageBody() body: unknown,
   ): Promise<CallAck> {
-    if (!isRecord(body) || typeof body.to !== 'string' || !body.offer) {
+    if (
+      !isRecord(body) ||
+      typeof body.to !== 'string' ||
+      !phoneDigits(body.to) ||
+      !body.offer
+    ) {
       return { ok: false, reason: 'invalid' };
     }
     const caller = socket.data;
@@ -269,12 +275,14 @@ export class CallsGateway implements OnGatewayInit, OnGatewayDisconnect {
       await Promise.all([
         this.calls.record(session.caller.userId, {
           phoneNumber: session.callee.phoneNumber,
+          contactName: session.callee.fullName, // Caller ID, like a phone
           callType: 'outgoing',
           duration,
           calledAt,
         }),
         this.calls.record(session.callee.userId, {
           phoneNumber: session.caller.phoneNumber,
+          contactName: session.caller.fullName,
           callType: session.answeredAt ? 'incoming' : 'missed',
           duration,
           calledAt,
