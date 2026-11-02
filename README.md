@@ -1,11 +1,11 @@
 # Call Dialer Web App
 
-A web dialer that works like the Phone app on a smartphone: type a number on a keypad and call it, keep contacts, mark favourites, and see your recent calls.
+A web dialer that works like the Phone app on a smartphone: type a number on a keypad and call it, keep contacts, mark favourites, and see your recent calls. **Everything it uses is free**, including the calling.
 
 | Part | Stack | Status |
 | --- | --- | --- |
-| [`client/`](client/) | Angular 20, Tailwind CSS 4, Angular Material icons | Usable. Calls are simulated, and data is stored in the browser |
-| [`server/`](server/) | NestJS 11, MongoDB (Mongoose) | Early. User, Contact and Call schemas exist; no API endpoints yet |
+| [`client/`](client/) | Angular 20, Tailwind CSS 4, Angular Material icons | Usable on its own. Calls are simulated and data is stored in the browser until it's connected to the server |
+| [`server/`](server/) | NestJS 11, MongoDB (Mongoose), socket.io | Accounts, contacts and call-history API, plus WebSocket signalling for free in-app calls. Tested end to end |
 
 ## Screenshots
 
@@ -57,18 +57,29 @@ On the keypad screen:
 
 With a mouse or touch screen: hold **0** for **+**, and hold **backspace** to clear everything.
 
+## How calling works (for free)
+
+Calling ordinary phone numbers through the phone network is never free. Every provider that connects to it (Twilio, Vonage, Telnyx, SIP trunks) bills per minute, and their trials only let you call numbers you've verified. So this project calls **between users of the app**, the way WhatsApp or Messenger calls work:
+
+1. Everyone signs up with their phone number.
+2. When you dial a number that belongs to another user who has the app open, the server rings them over a WebSocket (socket.io).
+3. Both browsers then talk to each other directly using **WebRTC**, the calling technology built into every modern browser. The audio never passes through the server, so there's nothing to pay for.
+4. Google's free public **STUN** servers help the two browsers find a route to each other. Users behind very strict firewalls may also need a **TURN** relay; you can self-host one for free with [coturn](https://github.com/coturn/coturn) and set `TURN_URL` on the server.
+5. The server writes each call to both people's history: outgoing for the caller, and incoming or missed for the person called.
+
+For a number that isn't registered in the app, the client can hand the call to the device's own phone app (a `tel:` link). That's free for us; the user's own phone plan applies.
+
 ## Current limitations
 
-- **Calls are simulated.** A browser can't dial a phone number on its own. The call progress (ringing, connected) is produced by timers inside [`call.service.ts`](client/src/app/core/services/calls/call.service.ts). To make real calls, connect a voice provider such as the [Twilio Voice JavaScript SDK](https://www.twilio.com/docs/voice/sdks/javascript): start the provider's call in `dial()` and drive the call status from its events. Only that file needs to change.
-- **Data lives in the browser.** Contacts and call history are saved in `localStorage` (keys `dialer.contacts` and `dialer.recents`) until the API exists. The first time you open the app it loads a few sample contacts and calls. To start empty, clear the site data in your browser's dev tools.
-- **No sign-in yet.** The server has a `User` schema, but there is no login.
+- **The client isn't connected to the server yet.** The API and call signalling are built and tested, but the frontend still uses simulated calls (timers in [`call.service.ts`](client/src/app/core/services/calls/call.service.ts)) and `localStorage` (keys `dialer.contacts` and `dialer.recents`). It also loads a few sample contacts and calls the first time it opens; to start empty, clear the site data in your browser's dev tools. Connecting the two is the next step (see the [Roadmap](#roadmap)).
+- **No phone-network calls.** Only app-to-app calls are possible for free (see above).
 
 ## Getting started
 
 ### Requirements
 
 - **Node.js 20.19+ or 22.12+** (needed by Angular 20) and npm
-- **MongoDB**, only if you want to run the server
+- For the server, a MongoDB database. `npm run db` starts a free local one with nothing to install (see below).
 
 ### Run the frontend
 
@@ -91,26 +102,19 @@ Other commands, run from `client/`:
 
 ### Run the backend
 
-The server reads its settings from environment variables. Nothing loads a `.env` file yet (`@nestjs/config` is installed but not wired up), so set them in your shell:
-
-| Variable | Required | Default |
-| --- | --- | --- |
-| `MONGODB_URI` | yes | none |
-| `PORT` | no | `3000` |
-
 ```bash
 cd server
 npm install
-
-# PowerShell
-$env:MONGODB_URI = "mongodb://localhost:27017/call-dialer"
-# Git Bash / macOS / Linux
-export MONGODB_URI="mongodb://localhost:27017/call-dialer"
-
-npm run start:dev
+cp .env.example .env   # then set JWT_SECRET to a long random string
+npm run db             # terminal 1: free local MongoDB on port 27017 (data kept in server/.mongo-data)
+npm run start:dev      # terminal 2: the API, restarting on file changes
 ```
 
-The server listens on **<http://localhost:3000>**.
+The API is served under **<http://localhost:3000/api>**; check it with `GET /api/health`. If port 3000 is already taken on your machine, set `PORT` in `.env`.
+
+Instead of `npm run db`, you can point `MONGODB_URI` at a MongoDB Community Server you installed yourself, or at a free MongoDB Atlas (M0) cluster.
+
+See the [server README](server/README.md) for every setting, the API endpoints and the calling protocol.
 
 ## Project structure
 
@@ -133,8 +137,16 @@ client/src/app/
 └── app.routes.ts
 
 server/src/
-├── app.module.ts     MongoDB connection
-└── modules/auth/schema/   User, Contact and Call schemas
+├── main.ts, app.setup.ts   startup: /api prefix, security headers, CORS, input validation
+├── config/           environment variables, checked at startup
+├── common/           phone-number rules (same as the client), MongoDB helpers
+└── modules/
+    ├── users/        User schema; look up a user by phone number
+    ├── auth/         sign up, log in, JWT guard (every route needs a token unless marked public)
+    ├── contacts/     contacts API
+    ├── calls/        call-history API, STUN/TURN server list
+    └── signaling/    socket.io gateway that sets up WebRTC calls between users
+server/test/          end-to-end tests against an in-memory MongoDB
 ```
 
 Components follow an atomic-design layout, from small to large: atoms → molecules → organisms → pages. State is held in Angular signals inside the services, and the pages only read from them. That means swapping `localStorage` for HTTP calls to the server only changes the services.
@@ -154,6 +166,7 @@ Components follow an atomic-design layout, from small to large: atoms → molecu
 
 ## Roadmap
 
-1. **REST API** for contacts and calls in the NestJS server, plus authentication.
-2. **Switch the client services from `localStorage` to the API.**
-3. **Real calling** through a voice provider (token endpoint on the server, voice SDK in the client), including incoming calls.
+1. ~~**REST API** for contacts and calls, plus authentication.~~ Done.
+2. ~~**Call signalling** for free app-to-app calls.~~ Done.
+3. **Connect the client:** sign-up and login screens, the contact and history services backed by the API, and a WebRTC `CallService` (microphone, ringing, an incoming-call screen), with a `tel:` fallback for numbers that aren't registered in the app.
+4. **Deploy for free**, for example the API on a free hosting tier, the database on MongoDB Atlas M0, and the client on a free static host.
