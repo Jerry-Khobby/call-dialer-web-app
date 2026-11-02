@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { Env, validateEnv } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { HttpThrottlerGuard, JwtAuthGuard } from './modules/auth/guards';
+import { CallsModule } from './modules/calls/calls.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -27,6 +28,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     AuthModule,
     ContactsModule,
+    CallsModule,
   ],
   controllers: [AppController],
   providers: [
