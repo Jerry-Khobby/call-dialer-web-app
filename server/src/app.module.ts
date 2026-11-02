@@ -7,6 +7,7 @@ import { AppController } from './app.controller';
 import { Env, validateEnv } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { HttpThrottlerGuard, JwtAuthGuard } from './modules/auth/guards';
+import { ContactsModule } from './modules/contacts/contacts.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -25,6 +26,7 @@ import { UsersModule } from './modules/users/users.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     UsersModule,
     AuthModule,
+    ContactsModule,
   ],
   controllers: [AppController],
   providers: [

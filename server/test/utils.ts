@@ -15,8 +15,21 @@ export async function createTestApp(): Promise<INestApplication<App>> {
   const app = moduleRef.createNestApplication<INestApplication<App>>();
   configureApp(app);
   await app.listen(0);
-  await app.get<Connection>(getConnectionToken()).dropDatabase();
+  await resetDatabase(app.get<Connection>(getConnectionToken()));
   return app;
+}
+
+/**
+ * Empties every collection but keeps its indexes. dropDatabase() would also drop the
+ * unique indexes Mongoose just built, so duplicate checks would pass or fail by timing.
+ */
+async function resetDatabase(connection: Connection): Promise<void> {
+  await Promise.all(
+    connection.modelNames().map((name) => connection.model(name).init()),
+  );
+  await Promise.all(
+    Object.values(connection.collections).map((c) => c.deleteMany({})),
+  );
 }
 
 export type ApiUser = {
