@@ -106,11 +106,22 @@ describe('Contacts (e2e)', () => {
       aliceContact.id,
     );
 
+    await api(app, bob).get(`/api/contacts/${aliceContact.id}`).expect(404);
     await api(app, bob)
       .patch(`/api/contacts/${aliceContact.id}`)
       .send({ favorite: true })
       .expect(404);
     await api(app, bob).delete(`/api/contacts/${aliceContact.id}`).expect(404);
+  });
+
+  it('gets one contact by id (for opening the detail page directly)', async () => {
+    const [first] = (await api(app, alice).get('/api/contacts'))
+      .body as ApiContact[];
+    const res = await api(app, alice)
+      .get(`/api/contacts/${first.id}`)
+      .expect(200);
+    expect(res.body).toEqual(first);
+    await api(app, alice).get('/api/contacts/not-an-id').expect(400);
   });
 
   it('deletes, and rejects malformed ids', async () => {

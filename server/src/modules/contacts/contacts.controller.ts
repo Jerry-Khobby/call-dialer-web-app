@@ -23,6 +23,15 @@ export class ContactsController {
     return this.contacts.list(userId);
   }
 
+  /** One contact, e.g. when the contact detail page is opened directly. */
+  @Get(':id')
+  get(
+    @CurrentUser() { userId }: AuthUser,
+    @Param('id', ParseObjectIdPipe) id: string,
+  ) {
+    return this.contacts.get(userId, id);
+  }
+
   @Post()
   create(@CurrentUser() { userId }: AuthUser, @Body() dto: CreateContactDto) {
     return this.contacts.create(userId, dto);

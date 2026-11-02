@@ -25,6 +25,12 @@ export class ContactsService {
       .exec();
   }
 
+  async get(userId: string, id: string): Promise<ContactDocument> {
+    const contact = await this.contacts.findOne({ _id: id, userId }).exec();
+    if (!contact) throw new NotFoundException('Contact not found');
+    return contact;
+  }
+
   async create(
     userId: string,
     dto: CreateContactDto,
