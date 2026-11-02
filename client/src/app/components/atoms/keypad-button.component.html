@@ -7,6 +7,11 @@
   (appTap)="clicked.emit(label)"
   (appLongPress)="longPressed.emit(label)"
 >
+  @if (isSymbol) {
+  <!-- * and # have no letters, so they sit in the middle of the circle like on a phone. -->
+  <span [class]="symbolClass">{{ label }}</span>
+  } @else {
   <span class="text-3xl leading-none">{{ label }}</span>
   <span class="text-[10px] font-semibold tracking-[0.2em] h-3 mt-0.5 opacity-70">{{ letters }}</span>
+  }
 </button>
