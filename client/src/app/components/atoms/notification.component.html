@@ -1,8 +1,18 @@
-@if(notification()) {
-<div class="notification-container">
-  <div class="notification" [ngClass]="notification()?.severity">
-    {{ notification()?.text }}
-    <img class="close" src="/assets/icons/close.svg" (click)="onClose()" />
+@if (notification(); as n) {
+<div class="notification-container" role="status" aria-live="polite">
+  <div
+    class="flex items-center gap-3 rounded-2xl border px-4 py-2.5 text-sm shadow-lg backdrop-blur-md"
+    [ngClass]="severityClasses[n.severity]"
+  >
+    <span>{{ n.text }}</span>
+    <button
+      type="button"
+      class="flex items-center opacity-70 hover:opacity-100 cursor-pointer"
+      aria-label="Dismiss notification"
+      (click)="onClose()"
+    >
+      <mat-icon fontIcon="close" class="icon-sm"></mat-icon>
+    </button>
   </div>
 </div>
 }
