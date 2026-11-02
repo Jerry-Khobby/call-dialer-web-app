@@ -9,10 +9,10 @@ npm install
 npm start
 ```
 
-Open **http://localhost:4200**. To see the phone-sized layout, turn on your browser's device toolbar (Ctrl+Shift+M in Chrome).
+Open **<http://localhost:4200>**. To see the phone-sized layout, turn on your browser's device toolbar (Ctrl+Shift+M in Chrome).
 
 | Command | What it does |
-|---|---|
+| --- | --- |
 | `npm start` | Dev server with live reload |
 | `npm run build` | Production build into `dist/client/` |
 | `npm test` | Unit tests with Karma (needs Chrome) |
