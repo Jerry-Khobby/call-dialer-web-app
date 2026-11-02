@@ -1,44 +1,81 @@
-<div class="flex flex-col items-center justify-center min-h-screen pb-32">
+<main class="flex flex-col items-center justify-center min-h-screen pb-32 pt-10 px-4">
   <!-- Number Display -->
   <div
-    class="text-4xl tracking-wider mb-2 h-12 flex items-center justify-center"
+    class="text-4xl tracking-wider h-12 flex items-center justify-center max-w-full overflow-hidden whitespace-nowrap"
     [class.pop]="isPopping"
+    aria-live="polite"
+    aria-label="Number"
   >
-    {{ typedNumber }}
+    {{ formattedNumber() }}
   </div>
 
-  <!-- Add Number Area (fixed height) -->
-  <div class="h-5 flex items-center justify-center">
-    <span
-      *ngIf="typedNumber"
-      (click)="goToNewContact()"
-      class="text-xs text-blue-300 cursor-pointer tracking-wider mb-3"
+  <!-- Contact name or "Add Number" (fixed height so the keypad doesn't jump) -->
+  <div class="h-8 flex items-center justify-center mb-4">
+    @if (matchedContact(); as contact) {
+    <a [routerLink]="['/contacts', contact.id]" class="text-sm text-gray-300 hover:text-white">
+      {{ fullName(contact) }}
+    </a>
+    } @else if (typedNumber()) {
+    <button
+      type="button"
+      (click)="showAddOptions.set(true)"
+      class="text-sm text-blue-300 hover:text-blue-200 cursor-pointer tracking-wide"
     >
       Add Number
-    </span>
+    </button>
+    }
   </div>
 
   <app-keypad (press)="addDigit($event)"></app-keypad>
 
-  <!-- CALL + CLEAR BUTTON WRAPPER -->
-  <div class="relative mt-6 flex justify-center items-center w-full">
-    <!-- CALL BUTTON (centered always) -->
+  <!-- CALL + DELETE -->
+  <div class="mt-6 grid grid-cols-3 gap-x-6 place-items-center">
+    <span></span>
     <button
-      class="w-20 h-20 bg-green-500 rounded-full text-white flex items-center justify-center shadow-lg active:bg-green-600 active:scale-95 transition-transform cursor-pointer"
+      type="button"
+      class="w-[4.5rem] h-[4.5rem] bg-green-500 rounded-full text-white flex items-center justify-center shadow-lg hover:bg-green-400 active:bg-green-600 active:scale-95 transition-transform cursor-pointer"
+      aria-label="Call"
       (click)="callThisNumber()"
     >
-      <mat-icon fontIcon="phone" class="text-4xl"></mat-icon>
+      <mat-icon fontIcon="phone" class="icon-lg"></mat-icon>
     </button>
 
-    <!-- CLEAR BUTTON (appears at right side of call button) -->
+    @if (typedNumber()) {
     <button
-      *ngIf="typedNumber.length > 0"
-      (click)="clearLastDigit()"
-      class="absolute left-[calc(50%-(-70px))] backdrop-blur-sm text-white rounded-full flex items-center justify-center active:bg-white/20 transition"
+      type="button"
+      class="w-12 h-12 text-white/80 hover:text-white rounded-full flex items-center justify-center cursor-pointer select-none"
+      aria-label="Delete digit (hold to clear)"
+      appLongPress
+      (appTap)="clearLastDigit()"
+      (appLongPress)="clearAll()"
     >
-      <mat-icon fontIcon="backspace" class="cross-icon leading-none cursor-pointer"></mat-icon>
+      <mat-icon fontIcon="backspace"></mat-icon>
+    </button>
+    }
+  </div>
+</main>
+
+<!-- "Add Number" action sheet -->
+@if (showAddOptions()) {
+<div
+  class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center p-3"
+  (click)="showAddOptions.set(false)"
+>
+  <div
+    class="w-full max-w-sm flex flex-col gap-2 animate-sheet"
+    role="dialog"
+    aria-label="Add number"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="rounded-2xl overflow-hidden bg-[#1c1c1f] divide-y divide-white/10">
+      <button type="button" class="sheet-btn" (click)="createNewContact()">Create New Contact</button>
+      <button type="button" class="sheet-btn" (click)="addToExistingContact()">Add to Existing Contact</button>
+    </div>
+    <button type="button" class="sheet-btn rounded-2xl bg-[#1c1c1f] font-semibold" (click)="showAddOptions.set(false)">
+      Cancel
     </button>
   </div>
 </div>
+}
 
 <app-tab-bar></app-tab-bar>

@@ -1,19 +1,36 @@
 import { Component, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { KeypadButtonComponent } from '../../atoms/keypad-button.component';
 
 @Component({
   selector: 'app-keypad',
   standalone: true,
-  imports: [CommonModule, KeypadButtonComponent],
+  imports: [KeypadButtonComponent],
   templateUrl: './keypad.component.html'
 })
 export class KeypadComponent {
-  keys = ['1','2','3','4','5','6','7','8','9','*','0','#'];
+  keys = [
+    { digit: '1', letters: '' },
+    { digit: '2', letters: 'ABC' },
+    { digit: '3', letters: 'DEF' },
+    { digit: '4', letters: 'GHI' },
+    { digit: '5', letters: 'JKL' },
+    { digit: '6', letters: 'MNO' },
+    { digit: '7', letters: 'PQRS' },
+    { digit: '8', letters: 'TUV' },
+    { digit: '9', letters: 'WXYZ' },
+    { digit: '*', letters: '' },
+    { digit: '0', letters: '+' },
+    { digit: '#', letters: '' },
+  ];
 
   @Output() press = new EventEmitter<string>();
 
   onKeyPress(key: string) {
     this.press.emit(key);
+  }
+
+  // Holding 0 types "+"; holding any other key still types it.
+  onLongPress(key: string) {
+    this.press.emit(key === '0' ? '+' : key);
   }
 }

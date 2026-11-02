@@ -1,4 +1,10 @@
-<div class="grid grid-cols-3 gap-4 place-items-center">
-  <app-keypad-button *ngFor="let key of keys" [label]="key" (clicked)="onKeyPress($event)">
-  </app-keypad-button>
+<div class="grid grid-cols-3 gap-x-6 gap-y-4 place-items-center">
+  @for (key of keys; track key.digit) {
+  <app-keypad-button
+    [label]="key.digit"
+    [letters]="key.letters"
+    (clicked)="onKeyPress($event)"
+    (longPressed)="onLongPress($event)"
+  ></app-keypad-button>
+  }
 </div>

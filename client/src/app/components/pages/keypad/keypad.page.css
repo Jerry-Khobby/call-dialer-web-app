@@ -13,9 +13,3 @@
     transform: scale(1);
   }
 }
-
-.cross-icon {
-  font-size: 17px !important; /* Increase the icon size */
-  width: 17px !important;
-  height: 17px !important;
-}
