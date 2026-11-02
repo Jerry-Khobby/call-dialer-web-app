@@ -18,6 +18,9 @@ export type AuthSession = { accessToken: string; user: UserDocument };
 
 @Injectable()
 export class AuthService {
+  /** Compared against when the email is unknown; same cost factor as real hashes. */
+  private readonly dummyHash = bcrypt.hash('no-such-account', BCRYPT_ROUNDS);
+
   constructor(
     private readonly users: UsersService,
     private readonly jwt: JwtService,
@@ -44,9 +47,12 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<AuthSession> {
     const user = await this.users.findByEmailWithPassword(dto.email);
-    const valid = user
-      ? await bcrypt.compare(dto.password, user.password)
-      : false;
+    // Always run a bcrypt comparison, so an unknown email takes as long as a wrong
+    // password; otherwise response times would reveal which emails have accounts.
+    const valid = await bcrypt.compare(
+      dto.password,
+      user?.password ?? (await this.dummyHash),
+    );
     if (!user || !valid)
       throw new UnauthorizedException('Invalid email or password');
     return this.session(user);

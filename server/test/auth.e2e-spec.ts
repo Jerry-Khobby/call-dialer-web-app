@@ -102,6 +102,21 @@ describe('Auth (e2e)', () => {
     }).expect(401);
   });
 
+  it("doesn't reveal through timing whether an email has an account", async () => {
+    await registerUser(app, { email: 'timing@example.com' });
+    const time = async (email: string) => {
+      const start = performance.now();
+      await login({ email, password: 'wrong-password' }).expect(401);
+      return performance.now() - start;
+    };
+    await time('warmup@example.com'); // The dummy hash is computed on first use
+
+    const wrongPassword = await time('timing@example.com');
+    const unknownEmail = await time('nobody-here@example.com');
+    // Before the fix an unknown email answered in a few ms against ~250 ms.
+    expect(unknownEmail).toBeGreaterThan(wrongPassword * 0.5);
+  });
+
   it('GET /auth/me needs a valid token', async () => {
     const user = await registerUser(app);
     const me = await api(app, user).get('/api/auth/me').expect(200);
