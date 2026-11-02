@@ -29,3 +29,6 @@ export function IsPhone(options?: ValidationOptions) {
       },
     });
 }
+
+/** Anything a phone can dial, including service codes like *123#. */
+export const DIALABLE = /^[0-9+*#\s().-]+$/;

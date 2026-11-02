@@ -76,6 +76,50 @@ describe('Call history (e2e)', () => {
     await api(app, alice).get('/api/calls?limit=0').expect(400);
   });
 
+  it('filters by number in any formatting (contact detail page)', async () => {
+    const calls = await list(
+      alice,
+      `?phone=${encodeURIComponent('024 123 4567')}`,
+    );
+    expect(calls.map((c) => c.phoneNumber)).toEqual(['0241234567']);
+    await api(app, alice).get('/api/calls?phone=call-me').expect(400);
+  });
+
+  it('deletes a grouped Recents row in one request', async () => {
+    const extra = await record(alice, {
+      phoneNumber: '0559993333',
+      callType: 'missed',
+    }).expect(201);
+    const extra2 = await record(alice, {
+      phoneNumber: '0559993333',
+      callType: 'missed',
+    }).expect(201);
+    const ids = [extra, extra2].map((r) => (r.body as ApiCall).id);
+
+    // Another user's ids are ignored, not deleted.
+    const byBob = await api(app, bob)
+      .post('/api/calls/bulk-delete')
+      .send({ ids })
+      .expect(200);
+    expect(byBob.body).toEqual({ deleted: 0 });
+
+    const res = await api(app, alice)
+      .post('/api/calls/bulk-delete')
+      .send({ ids })
+      .expect(200);
+    expect(res.body).toEqual({ deleted: 2 });
+    expect((await list(alice)).map((c) => c.id)).not.toContain(ids[0]);
+
+    await api(app, alice)
+      .post('/api/calls/bulk-delete')
+      .send({ ids: [] })
+      .expect(400);
+    await api(app, alice)
+      .post('/api/calls/bulk-delete')
+      .send({ ids: ['not-an-id'] })
+      .expect(400);
+  });
+
   it('validates new entries', async () => {
     await record(alice, {
       phoneNumber: 'call me',

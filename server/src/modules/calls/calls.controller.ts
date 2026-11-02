@@ -14,7 +14,7 @@ import { Env } from '../../config/env.validation';
 import type { AuthUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/decorators';
 import { CallsService } from './calls.service';
-import { CreateCallDto, ListCallsQuery } from './dto/call.dto';
+import { CreateCallDto, DeleteCallsDto, ListCallsQuery } from './dto/call.dto';
 import { iceServers } from './ice-servers';
 
 @Controller('calls')
@@ -24,7 +24,7 @@ export class CallsController {
     private readonly config: ConfigService<Env, true>,
   ) {}
 
-  /** Recent calls: GET /api/calls?type=missed&limit=50 */
+  /** Recent calls: GET /api/calls?type=missed&phone=0241234567&limit=50 */
   @Get()
   list(@CurrentUser() { userId }: AuthUser, @Query() query: ListCallsQuery) {
     return this.calls.list(userId, query);
@@ -44,6 +44,16 @@ export class CallsController {
   @Post()
   record(@CurrentUser() { userId }: AuthUser, @Body() dto: CreateCallDto) {
     return this.calls.record(userId, dto);
+  }
+
+  /** Deletes several calls at once: a grouped row in Recents. */
+  @Post('bulk-delete')
+  @HttpCode(200)
+  async removeMany(
+    @CurrentUser() { userId }: AuthUser,
+    @Body() { ids }: DeleteCallsDto,
+  ) {
+    return { deleted: await this.calls.removeMany(userId, ids) };
   }
 
   @Delete()
