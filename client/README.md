@@ -1,59 +1,33 @@
-# Client
+# Call Dialer: Client
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.6.
+The Angular frontend of the call dialer. For the full feature list, current limitations and the backend, see the [project README](../README.md).
 
-## Development server
-
-To start a local development server, run:
+## Run it
 
 ```bash
-ng serve
+npm install
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open **http://localhost:4200**. To see the phone-sized layout, turn on your browser's device toolbar (Ctrl+Shift+M in Chrome).
 
-## Code scaffolding
+| Command | What it does |
+|---|---|
+| `npm start` | Dev server with live reload |
+| `npm run build` | Production build into `dist/client/` |
+| `npm test` | Unit tests with Karma (needs Chrome) |
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+On Windows, if the build crashes in Git Bash with `all goroutines are asleep - deadlock!`, use PowerShell or Command Prompt.
 
-```bash
-ng generate component component-name
-```
+## Where things live
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- **Pages**: `src/app/components/pages/` (keypad, contacts, contact detail, contact form, favorites, recents, call)
+- **State**:
+  - `src/app/core/services/contacts/contact.service.ts`: contacts
+  - `src/app/core/services/calls/recents.service.ts`: call history
+  - `src/app/core/services/calls/call.service.ts`: the call in progress
+- **Helpers**: `src/app/core/utils/` (phone number formatting and validation, call times)
 
-```bash
-ng generate --help
-```
+Contacts and call history are stored in `localStorage` (`dialer.contacts`, `dialer.recents`), and the app loads sample data the first time it runs. To start empty, clear the site data in your browser's dev tools.
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Calls are simulated in `call.service.ts`. That is the only file to change when a real voice provider is added.
