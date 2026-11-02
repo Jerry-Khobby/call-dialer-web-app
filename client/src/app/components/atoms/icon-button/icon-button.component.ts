@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 
@@ -8,18 +8,28 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule, MatIconModule],
   template: `
     <button
-      class="flex flex-col items-center justify-center text-center text-white"
+      type="button"
+      class="flex flex-col items-center justify-center text-center text-white disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
+      [disabled]="disabled"
+      [attr.aria-pressed]="toggle ? active : null"
+      (click)="pressed.emit()"
     >
       <div
-        class="w-12 h-12 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition"
+        class="w-16 h-16 rounded-full flex items-center justify-center transition"
+        [ngClass]="active ? 'bg-white text-black' : 'bg-white/10 hover:bg-white/20'"
       >
-        <mat-icon [fontIcon]="icon" class="text-lg"></mat-icon>
+        <mat-icon [fontIcon]="icon" class="icon-lg"></mat-icon>
       </div>
-      <span class="text-[11px] mt-1 opacity-80">{{ label }}</span>
+      <span class="text-xs mt-1.5 opacity-80">{{ label }}</span>
     </button>
   `,
 })
 export class IconButtonComponent {
   @Input() icon!: string;
   @Input() label!: string;
+  @Input() active = false;
+  /** Set for on/off buttons (mute, speaker) so screen readers announce the state. */
+  @Input() toggle = false;
+  @Input() disabled = false;
+  @Output() pressed = new EventEmitter<void>();
 }

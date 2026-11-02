@@ -1,2 +1,11 @@
+@if (showCallBanner()) {
+<a
+  routerLink="/call"
+  class="fixed top-3 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 rounded-full bg-green-500 px-4 py-1.5 text-sm font-medium text-white shadow-lg hover:bg-green-400"
+>
+  <span class="material-icons text-base leading-none" aria-hidden="true">call</span>
+  Return to call
+</a>
+}
 <router-outlet> </router-outlet>
 <app-notification></app-notification>

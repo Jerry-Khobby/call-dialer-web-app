@@ -6,7 +6,8 @@ import { ContactsPage } from './components/pages/contacts/contacts';
 import { ContactDetailPage } from './components/pages/contact-detail/contact-detail';
 import { FavoritesPage } from './components/pages/favorites/favorites';
 import { RecentsPage } from './components/pages/recents/recents';
-import { CallerScreenComponent } from './components/organisms/caller-screen/caller-screen.component';
+import { CallPage } from './components/pages/call/call.page';
+import { activeCallGuard } from './core/services/calls/active-call.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'keypad', pathMatch: 'full' },
@@ -17,6 +18,6 @@ export const routes: Routes = [
   { path: 'contacts/new', component: ContactFormComponent, title: 'New Contact' },
   { path: 'contacts/:id', component: ContactDetailPage, title: 'Contact' },
   { path: 'contacts/:id/edit', component: ContactFormComponent, title: 'Edit Contact' },
-  { path: 'call/:name', component: CallerScreenComponent },
+  { path: 'call', component: CallPage, canActivate: [activeCallGuard], title: 'Call' },
   { path: '**', redirectTo: 'keypad' },
 ];
