@@ -1,45 +1,125 @@
-<div class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
-  <div class="w-[85%] max-w-xs flex flex-col gap-5 pt-26">
+<main class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
+  <div class="w-full max-w-sm px-4 flex flex-col gap-4 pt-16">
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <h2 class="text-lg font-semibold tracking-wide">Recents</h2>
+      @if (editing() && hasCalls()) {
+      <button type="button" class="text-blue-400 hover:text-blue-300 w-14 text-left cursor-pointer" (click)="confirmingClear.set(true)">
+        Clear
+      </button>
+      } @else {
+      <span class="w-14"></span>
+      }
+
+      <!-- All / Missed -->
+      <div class="flex rounded-lg bg-white/10 p-0.5 text-sm" role="tablist" aria-label="Filter calls">
+        <button
+          type="button"
+          role="tab"
+          class="px-4 py-1 rounded-md transition cursor-pointer"
+          [ngClass]="{ 'bg-white/20': filter() === 'all' }"
+          [attr.aria-selected]="filter() === 'all'"
+          (click)="filter.set('all')"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="px-4 py-1 rounded-md transition cursor-pointer"
+          [ngClass]="{ 'bg-white/20': filter() === 'missed' }"
+          [attr.aria-selected]="filter() === 'missed'"
+          (click)="filter.set('missed')"
+        >
+          Missed
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="text-blue-400 hover:text-blue-300 w-14 text-right cursor-pointer disabled:opacity-40"
+        [disabled]="!hasCalls()"
+        (click)="toggleEditing()"
+      >
+        {{ editing() ? 'Done' : 'Edit' }}
+      </button>
     </div>
+
+    <h1 class="text-2xl font-bold">Recents</h1>
 
     <!-- Recents List -->
-    <div class="overflow-y-auto max-h-[60vh] pr-1 custom-scroll">
-      <ul class="space-y-3">
-        <li
-          *ngFor="let r of recents"
-          (click)="startCall(r)"
-          class="flex items-center justify-between px-3 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition cursor-pointer"
+    <ul class="flex flex-col divide-y divide-white/5 overflow-y-auto max-h-[64vh] custom-scroll">
+      @for (group of groups(); track group.ids[0]) {
+      <li class="flex items-center gap-2 py-1">
+        @if (editing()) {
+        <button
+          type="button"
+          class="text-red-500 flex cursor-pointer"
+          [attr.aria-label]="'Delete ' + displayName(group) + ' from recents'"
+          (click)="remove(group)"
         >
-          <!-- Name + Type -->
-          <div class="flex flex-col">
-            <span class="font-medium" [class.text-red-500]="r.type === 'missed'">
-              {{ r.name }}
-              <span *ngIf="r.count > 1" class="text-gray-400 text-sm"> ({{ r.count }}) </span>
-            </span>
+          <mat-icon fontIcon="remove_circle"></mat-icon>
+        </button>
+        }
 
-            <span
-              class="text-sm"
-              [ngClass]="{
-                'text-red-500': r.type === 'missed',
-                'text-green-400': r.type === 'incoming',
-                'text-gray-400': r.type === 'outgoing'
-              }"
-            >
-              {{ r.type | titlecase }}
+        <button
+          type="button"
+          class="flex-1 min-w-0 flex items-center gap-3 text-left px-2 py-2 rounded-lg hover:bg-white/5 transition cursor-pointer"
+          [attr.aria-label]="'Call ' + displayName(group)"
+          (click)="callBack(group)"
+        >
+          <mat-icon
+            [fontIcon]="callIcons[group.callType]"
+            class="icon-sm shrink-0"
+            [class.text-red-500]="group.callType === 'missed'"
+            [class.text-gray-500]="group.callType !== 'missed'"
+            [attr.aria-label]="group.callType"
+          ></mat-icon>
+          <span class="flex flex-col min-w-0">
+            <span class="font-medium truncate" [class.text-red-500]="group.callType === 'missed'">
+              {{ displayName(group) }}
+              @if (group.ids.length > 1) {
+              <span class="text-gray-400 text-sm">({{ group.ids.length }})</span>
+              }
             </span>
-          </div>
-
-          <!-- Time -->
-          <span class="text-gray-500 text-sm">
-            {{ r.time }}
+            <span class="text-sm text-gray-400">{{ group.contact ? 'mobile' : 'unknown' }}</span>
           </span>
-        </li>
-      </ul>
-    </div>
+        </button>
+
+        <span class="text-gray-500 text-sm shrink-0">{{ callTime(group) }}</span>
+        <button
+          type="button"
+          class="text-blue-400 hover:text-blue-300 flex p-1 cursor-pointer"
+          [attr.aria-label]="'Details for ' + displayName(group)"
+          (click)="showInfo(group)"
+        >
+          <mat-icon fontIcon="info_outline"></mat-icon>
+        </button>
+      </li>
+      } @empty {
+      <li class="flex flex-col items-center text-center gap-3 py-16 text-gray-400">
+        <mat-icon [fontIcon]="filter() === 'missed' ? 'call_missed' : 'history'" class="icon-xl opacity-60"></mat-icon>
+        <p class="text-lg text-white">{{ filter() === 'missed' ? 'No Missed Calls' : 'No Recents' }}</p>
+      </li>
+      }
+    </ul>
+  </div>
+</main>
+
+<!-- Clear confirmation sheet -->
+@if (confirmingClear()) {
+<div
+  class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center p-3"
+  (click)="confirmingClear.set(false)"
+>
+  <div class="w-full max-w-sm flex flex-col gap-2 animate-sheet" role="dialog" aria-label="Clear recents" (click)="$event.stopPropagation()">
+    <button type="button" class="sheet-btn sheet-btn-danger rounded-2xl bg-[#1c1c1f]" (click)="clearAll()">
+      Clear All Recents
+    </button>
+    <button type="button" class="sheet-btn rounded-2xl bg-[#1c1c1f] font-semibold" (click)="confirmingClear.set(false)">
+      Cancel
+    </button>
   </div>
 </div>
+}
 
 <app-tab-bar></app-tab-bar>

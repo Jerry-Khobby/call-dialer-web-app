@@ -22,3 +22,56 @@ body {
 .active-tab {
   @apply bg-white/5 text-blue-50 backdrop-blur-md shadow-lg border border-white/15;
 }
+
+/* Material icon sizes (mat-icon sets a fixed 24px box, so size utilities need !important) */
+.icon-sm {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.icon-lg {
+  font-size: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.icon-xl {
+  font-size: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+/* Phone-style action sheet (Add Number, Clear Recents, Delete Contact) */
+.sheet-btn {
+  @apply w-full py-3.5 text-center text-blue-400 text-[17px] hover:bg-white/5 cursor-pointer;
+}
+
+.sheet-btn-danger {
+  @apply text-red-500;
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.animate-sheet {
+  animation: sheetUp 0.22s ease-out;
+}
+
+/* Contact detail quick-action tiles (message, call, favorite) */
+.action-tile {
+  @apply flex flex-col items-center gap-1 rounded-2xl bg-white/5 hover:bg-white/10 py-3 text-blue-400 text-xs transition cursor-pointer;
+}
