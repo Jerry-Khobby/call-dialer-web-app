@@ -47,6 +47,8 @@ The server checks these at startup and lists every missing or invalid one.
 
 All routes are under `/api`. Apart from register, login and health, every request needs the header `Authorization: Bearer <accessToken>`. Errors use Nest's standard shape, `{ statusCode, message, error }`; validation errors list each problem in `message`. Responses use `id` (not `_id`), and private fields such as password hashes are never returned.
 
+Text fields are trimmed before they're checked, so `" Ama "` is saved as `"Ama"` and a name of only spaces is rejected. Optional fields can be left out but not sent as `null`. Unknown fields are rejected, and any invalid value is a `400`, never a `500`.
+
 ### Auth
 
 | Method and path | Body | Response |
@@ -55,30 +57,32 @@ All routes are under `/api`. Apart from register, login and health, every reques
 | `POST /auth/login` | `{ email, password }` | `200 { accessToken, user }`, or `401` |
 | `GET /auth/me` | | `200 user` |
 
-Passwords must be 8–72 characters and are stored as bcrypt hashes. Register and login are limited to 20 requests per minute per IP address; other routes to 120.
+Passwords must be 8–72 characters and are stored as bcrypt hashes. A failed login takes the same time whether or not the email exists, so response times don't reveal who has an account. Register and login are limited to 20 requests per minute per IP address; other routes to 120.
 
 ### Contacts
 
 | Method and path | Body | Response |
 | --- | --- | --- |
 | `GET /contacts` | | `200 Contact[]`, alphabetical |
+| `GET /contacts/:id` | | `200 Contact`, e.g. when the contact detail page is opened directly |
 | `POST /contacts` | `{ firstName, lastName?, phoneNumber, favorite? }` | `201 Contact`. `409 "This number is already saved as …"` |
 | `PATCH /contacts/:id` | any of the fields above | `200 Contact` |
 | `DELETE /contacts/:id` | | `204` |
 
-`Contact = { id, firstName, lastName, phoneNumber, favorite, createdAt, updatedAt }`. This matches the client's `Contact` type.
+`Contact = { id, firstName, lastName, phoneNumber, favorite, createdAt, updatedAt }`. This matches the client's `Contact` type. Names can be up to 50 characters.
 
 ### Call history
 
 | Method and path | Body | Response |
 | --- | --- | --- |
-| `GET /calls?type=missed&limit=50` | | `200 Call[]`, newest first (`type` and `limit` are optional; `limit` is 1–500, default 100) |
+| `GET /calls?type=missed&phone=…&limit=50` | | `200 Call[]`, newest first. All filters are optional: `type`, `phone` (calls with that number in any formatting, for the contact detail page) and `limit` (1–500, default 100) |
 | `POST /calls` | `{ phoneNumber, callType, duration?, calledAt?, contactName? }` | `201 Call`. For calls the server didn't see, e.g. ones handed to the phone app |
 | `DELETE /calls/:id` | | `204` |
+| `POST /calls/bulk-delete` | `{ ids: string[] }` | `200 { deleted }`. Removes a grouped Recents row such as "Daniel White (3)" in one request; ids that belong to other users are ignored |
 | `DELETE /calls` | | `204`, clears the whole history |
 | `GET /calls/ice-servers` | | `200 RTCIceServer[]`: Google's free STUN servers, plus TURN if configured |
 
-`Call = { id, phoneNumber, callType: 'outgoing' | 'incoming' | 'missed', duration (seconds), calledAt }`. This matches the client's `CallRecord` type.
+`Call = { id, phoneNumber, contactName?, callType: 'outgoing' | 'incoming' | 'missed', duration (seconds), calledAt }`. This matches the client's `CallRecord` type, plus `contactName`. For in-app calls, `contactName` is the other person's account name, so Recents can show a name even when they aren't in your contacts, like caller ID.
 
 ### Health
 
@@ -90,7 +94,7 @@ Connect to the `/calls` namespace with the same token: `io('http://localhost:300
 
 | Direction | Event | Payload | Ack / notes |
 | --- | --- | --- | --- |
-| caller → server | `call:start` | `{ to: phoneNumber, offer }` | `{ ok: true, callId }`, or `{ ok: false, reason }` with `not-registered`, `self`, `offline`, `busy`, `in-call` or `invalid` |
+| caller → server | `call:start` | `{ to: phoneNumber, offer }` | `{ ok: true, callId }`, or `{ ok: false, reason }` with `not-registered`, `self`, `offline`, `busy`, `in-call` or `invalid` (missing offer, or a number with no digits) |
 | server → callee | `call:incoming` | `{ callId, from: { phoneNumber, fullName }, offer }` | Sent to every tab the callee has open |
 | callee → server | `call:answer` | `{ callId, answer }` | The callee's other tabs get `call:ended` with reason `answered-elsewhere` |
 | server → caller | `call:answered` | `{ callId, answer }` | |
@@ -102,6 +106,8 @@ Connect to the `/calls` namespace with the same token: `io('http://localhost:300
 `offer`, `answer` and `candidate` are the browser's `RTCSessionDescription` and `RTCIceCandidate` objects, passed through unchanged.
 
 Every call is saved to both histories before `call:ended` is sent, so a client can refresh Recents when it receives that event. A call the callee declines, doesn't answer, or can't receive (offline or busy) is recorded as **missed** for them.
+
+Numbers are matched by their digits, so `024 123 4567` and `0241234567` are the same number. A number with a country code (`+233 24 123 4567`) and the same number written locally (`024 123 4567`) are **not** matched, because the digits differ. This is the same rule the client uses.
 
 ## Project layout
 
