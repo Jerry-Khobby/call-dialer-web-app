@@ -1,17 +1,22 @@
 import { Routes } from '@angular/router';
 
 import { KeypadPage } from './components/pages/keypad/keypad.page';
-import { NewContactComponent } from './components/pages/new-contact/new-contact.component';
+import { ContactFormComponent } from './components/pages/contact-form/contact-form.component';
 import { ContactsPage } from './components/pages/contacts/contacts';
+import { ContactDetailPage } from './components/pages/contact-detail/contact-detail';
+import { FavoritesPage } from './components/pages/favorites/favorites';
+import { RecentsPage } from './components/pages/recents/recents';
 import { CallerScreenComponent } from './components/organisms/caller-screen/caller-screen.component';
 
-import { RecentsPage } from './components/pages/recents/recents';
 export const routes: Routes = [
   { path: '', redirectTo: 'keypad', pathMatch: 'full' },
-  { path: 'keypad', component: KeypadPage },
-  { path: 'contacts', component:ContactsPage },
-    { path: 'call/:name', component: CallerScreenComponent },
-  { path: 'recents', component: RecentsPage },
-  {path:'new-contact',component:NewContactComponent},
-  { path: '**', redirectTo: 'contacts' },
+  { path: 'keypad', component: KeypadPage, title: 'Keypad' },
+  { path: 'favorites', component: FavoritesPage, title: 'Favorites' },
+  { path: 'recents', component: RecentsPage, title: 'Recents' },
+  { path: 'contacts', component: ContactsPage, title: 'Contacts' },
+  { path: 'contacts/new', component: ContactFormComponent, title: 'New Contact' },
+  { path: 'contacts/:id', component: ContactDetailPage, title: 'Contact' },
+  { path: 'contacts/:id/edit', component: ContactFormComponent, title: 'Edit Contact' },
+  { path: 'call/:name', component: CallerScreenComponent },
+  { path: '**', redirectTo: 'keypad' },
 ];

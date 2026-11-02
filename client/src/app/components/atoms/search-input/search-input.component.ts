@@ -1,4 +1,4 @@
-import { Component,EventEmitter,Output } from "@angular/core";
+import { Component,EventEmitter,Input,Output } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { MatIconModule } from "@angular/material/icon";
@@ -14,5 +14,11 @@ import { MatIconModule } from "@angular/material/icon";
 
 export class SearchInputComponent{
   search ='';
-  @Output() onSearch = new EventEmitter<string>();
+  @Input() placeholder = 'Search';
+  @Output() searchChange = new EventEmitter<string>();
+
+  clear(){
+    this.search = '';
+    this.searchChange.emit('');
+  }
 }

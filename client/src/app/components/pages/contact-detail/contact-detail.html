@@ -1,0 +1,78 @@
+<main class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
+  <div class="w-full max-w-sm px-4 pt-10">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <a routerLink="/contacts" class="flex items-center text-blue-400 hover:text-blue-300">
+        <mat-icon fontIcon="chevron_left"></mat-icon>
+        Contacts
+      </a>
+      @if (contact(); as c) {
+      <a [routerLink]="['/contacts', c.id, 'edit']" class="text-blue-400 hover:text-blue-300">Edit</a>
+      }
+    </div>
+
+    @if (contact(); as c) {
+    <!-- Identity -->
+    <div class="flex flex-col items-center gap-3">
+      <app-avatar [initials]="initials(c)" [size]="96"></app-avatar>
+      <h1 class="text-3xl font-semibold text-center">{{ fullName(c) }}</h1>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="grid grid-cols-3 gap-3 mt-6">
+      <a [href]="'sms:' + c.phoneNumber" class="action-tile">
+        <mat-icon fontIcon="message"></mat-icon>
+        <span>message</span>
+      </a>
+      <button type="button" class="action-tile" (click)="call()">
+        <mat-icon fontIcon="call"></mat-icon>
+        <span>call</span>
+      </button>
+      <button
+        type="button"
+        class="action-tile"
+        [attr.aria-pressed]="c.favorite"
+        (click)="toggleFavorite()"
+      >
+        <mat-icon [fontIcon]="c.favorite ? 'star' : 'star_border'" [class.text-yellow-400]="c.favorite"></mat-icon>
+        <span>{{ c.favorite ? 'favorite' : 'add favorite' }}</span>
+      </button>
+    </div>
+
+    <!-- Phone number -->
+    <button
+      type="button"
+      class="w-full text-left mt-4 rounded-2xl bg-white/5 hover:bg-white/10 px-4 py-3 transition cursor-pointer"
+      (click)="call()"
+    >
+      <span class="block text-xs text-gray-400">mobile</span>
+      <span class="text-blue-400 text-lg">{{ formatPhone(c.phoneNumber) }}</span>
+    </button>
+
+    <!-- Recent calls with this contact -->
+    @if (recentCalls().length > 0) {
+    <section class="mt-4 rounded-2xl bg-white/5 px-4 py-3">
+      <h2 class="text-xs text-gray-400 mb-2">Recent Calls</h2>
+      <ul class="flex flex-col gap-1.5 text-sm">
+        @for (call of recentCalls(); track call.id) {
+        <li class="flex justify-between gap-2">
+          <span [class.text-red-400]="call.callType === 'missed'">{{ callLabels[call.callType] }}</span>
+          <span class="text-gray-400">
+            @if (call.duration > 0) { {{ formatDuration(call.duration) }} · }
+            {{ callTime(call.calledAt) }}
+          </span>
+        </li>
+        }
+      </ul>
+    </section>
+    }
+    } @else {
+    <div class="flex flex-col items-center gap-3 text-gray-400 py-20">
+      <mat-icon fontIcon="person_off" class="icon-xl opacity-60"></mat-icon>
+      <p>This contact no longer exists.</p>
+    </div>
+    }
+  </div>
+</main>
+
+<app-tab-bar></app-tab-bar>

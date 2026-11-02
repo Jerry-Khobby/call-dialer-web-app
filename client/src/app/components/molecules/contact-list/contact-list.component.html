@@ -1,3 +1,13 @@
-<div class="flex flex-col divide-y divide-white/10">
-  <app-contact-item *ngFor="let contact of contacts" [contact]="contact"></app-contact-item>
-</div>
+<ul class="flex flex-col divide-y divide-white/5">
+  @for (contact of contacts; track contact.id) {
+  <li>
+    <button
+      type="button"
+      class="w-full text-left px-2 rounded-lg hover:bg-white/5 transition cursor-pointer"
+      (click)="contactSelected.emit(contact)"
+    >
+      <app-contact-item [contact]="contact" [showPhone]="showPhone"></app-contact-item>
+    </button>
+  </li>
+  }
+</ul>

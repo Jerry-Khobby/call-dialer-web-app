@@ -1,28 +1,82 @@
-<div class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
-  <!-- Main Content Container -->
-  <div class="w-[85%] max-w-xs flex flex-col gap-5 rounded-none backdrop-blur-md pt-26">
+<main class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
+  <div class="w-full max-w-sm px-4 flex flex-col gap-4 pt-16">
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <h2 class="text-lg font-semibold tracking-wide">Contacts</h2>
-      <button
-        class="bg-blue-500/10 text-blue-400 p-[0.1rem] rounded-full hover:bg-blue-500/20 transition flex justify-center items-center"
-        (click)="addContact()"
+      @if (addNumber) {
+      <div>
+        <h1 class="text-2xl font-bold">Choose Contact</h1>
+        <p class="text-sm text-gray-400">to add {{ formatPhone(addNumber) }}</p>
+      </div>
+      <a routerLink="/keypad" class="text-blue-400 hover:text-blue-300">Cancel</a>
+      } @else {
+      <h1 class="text-2xl font-bold">Contacts</h1>
+      <a
+        routerLink="/contacts/new"
+        class="bg-blue-500/10 text-blue-400 w-9 h-9 rounded-full hover:bg-blue-500/20 transition flex justify-center items-center"
+        aria-label="New contact"
       >
-        <mat-icon fontIcon="add" class="text-sm"></mat-icon>
-      </button>
+        <mat-icon fontIcon="add"></mat-icon>
+      </a>
+      }
     </div>
 
     <!-- Search -->
-    <app-search-input (onSearch)="filterContacts($event)"></app-search-input>
+    <app-search-input
+      placeholder="Search name or number"
+      (searchChange)="query.set($event)"
+    ></app-search-input>
 
-    <!-- Contact List (scrollable) -->
-    <div class="overflow-y-auto max-h-[60vh] pr-1 custom-scroll">
-      <app-contact-list
-        [contacts]="filteredContacts"
-        (onSelect)="startCall($event)"
-      ></app-contact-list>
+    <!-- Contact List (scrollable) with alphabet index -->
+    <div class="relative">
+      <div class="overflow-y-auto max-h-[62vh] pr-6 custom-scroll" id="contact-scroll">
+        @for (section of sections(); track section.letter) {
+        <section [id]="'section-' + section.letter" [attr.aria-label]="section.letter">
+          <h2
+            class="sticky top-0 z-10 bg-[#0f0f11]/95 backdrop-blur text-xs font-semibold text-gray-400 px-2 py-1 border-b border-white/5"
+          >
+            {{ section.letter }}
+          </h2>
+          <app-contact-list
+            [contacts]="section.contacts"
+            (contactSelected)="openContact($event)"
+          ></app-contact-list>
+        </section>
+        } @empty {
+          @if (totalContacts() === 0) {
+          <div class="flex flex-col items-center text-center gap-3 py-16 text-gray-400">
+            <mat-icon fontIcon="contacts" class="icon-xl opacity-60"></mat-icon>
+            <p class="text-lg text-white">No Contacts</p>
+            <a routerLink="/contacts/new" class="text-blue-400 hover:text-blue-300">Create New Contact</a>
+          </div>
+          } @else {
+          <p class="text-center text-gray-400 py-16">No results for "{{ query() }}"</p>
+          }
+        }
+      </div>
+
+      @if (sections().length > 0 && !query()) {
+      <nav
+        class="absolute right-0 top-0 h-full flex flex-col justify-center text-[10px] font-semibold text-blue-400"
+        aria-label="Jump to letter"
+      >
+        @for (letter of indexLetters; track letter) {
+        <button
+          type="button"
+          class="leading-[1.15] px-1 hover:text-blue-200 cursor-pointer"
+          [attr.aria-label]="'Jump to ' + letter"
+          (click)="jumpTo(letter)"
+        >
+          {{ letter }}
+        </button>
+        }
+      </nav>
+      }
     </div>
+
+    @if (totalContacts() > 0 && !query()) {
+    <p class="text-center text-xs text-gray-500">{{ totalContacts() }} Contacts</p>
+    }
   </div>
-</div>
+</main>
 
 <app-tab-bar></app-tab-bar>

@@ -9,5 +9,11 @@ import { RouterModule } from '@angular/router';
   styleUrl: './tab-bar.css',
 })
 export class TabBar {
-
+  // Same order as a phone's dialer app.
+  tabs = [
+    { path: '/favorites', label: 'Favorites', icon: 'star' },
+    { path: '/recents', label: 'Recents', icon: 'history' },
+    { path: '/contacts', label: 'Contacts', icon: 'contacts' },
+    { path: '/keypad', label: 'Keypad', icon: 'dialpad' },
+  ];
 }
