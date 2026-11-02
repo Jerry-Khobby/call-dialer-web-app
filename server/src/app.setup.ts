@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import compression from 'compression';
 import helmet from 'helmet';
 import { CorsIoAdapter } from './common/cors-io.adapter';
+import { MongooseExceptionFilter } from './common/mongoose-exception.filter';
 import { Env } from './config/env.validation';
 
 /** Shared by main.ts and the e2e tests so both run the app with the same middleware. */
@@ -24,6 +25,7 @@ export function configureApp(app: INestApplication): void {
       transform: true,
     }),
   );
+  app.useGlobalFilters(new MongooseExceptionFilter());
   app.useWebSocketAdapter(new CorsIoAdapter(app, origins));
   app.enableShutdownHooks();
 }

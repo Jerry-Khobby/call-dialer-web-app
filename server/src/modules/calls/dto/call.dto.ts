@@ -11,10 +11,12 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { Optional, Trim } from '../../../common/validation';
 import { CALL_TYPES, type CallType } from '../schemas/call.schema';
 
 export class CreateCallDto {
   // Anything dialable, including service codes like *123#.
+  @Trim()
   @IsString()
   @Matches(/^[0-9+*#\s().-]+$/, {
     message: 'phoneNumber contains characters that cannot be dialed',
@@ -25,16 +27,17 @@ export class CreateCallDto {
   @IsIn(CALL_TYPES)
   callType: CallType;
 
-  @IsOptional()
+  @Optional()
   @IsInt()
   @Min(0)
   duration?: number;
 
-  @IsOptional()
+  @Optional()
   @IsDateString()
   calledAt?: string;
 
-  @IsOptional()
+  @Optional()
+  @Trim()
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
