@@ -9,21 +9,35 @@ A web dialer that works like the Phone app on a smartphone: type a number on a k
 
 ## Screenshots
 
+Dialer follows your device's light or dark setting, and you can choose either one on **My Card**.
+
+**Dark**
+
+| Log in | Create account | Keypad |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/login.png" width="240" alt="Log in with the password shown by the eye button"> | <img src="docs/screenshots/register.png" width="240" alt="Create account with inline errors and a password strength guide"> | <img src="docs/screenshots/keypad.png" width="240" alt="Keypad with a typed number and the matching contact's name"> |
+| **Contacts** | **Contact** | **Recents** |
+| <img src="docs/screenshots/contacts.png" width="240" alt="Contact list with My Card, A–Z sections and a letter index"> | <img src="docs/screenshots/contact-detail.png" width="240" alt="Contact page with Message, Call and Favorite, the number and recent calls"> | <img src="docs/screenshots/recents.png" width="240" alt="Recent calls under Today, Yesterday and Earlier, missed calls in red"> |
+| **Incoming call** | **In a call** | **New contact** |
+| <img src="docs/screenshots/incoming.png" width="240" alt="Incoming call with Decline and Accept"> | <img src="docs/screenshots/call.png" width="240" alt="Connected call with the live timer, Mute, Keypad and Speaker"> | <img src="docs/screenshots/new-contact.png" width="240" alt="New contact form warning that the number is already saved"> |
+
+**Light**
+
 | Log in | Keypad | Contacts |
 | :---: | :---: | :---: |
-| <img src="docs/screenshots/login.png" width="240" alt="Log in screen"> | <img src="docs/screenshots/keypad.png" width="240" alt="Keypad with a typed number and the matching contact's name"> | <img src="docs/screenshots/contacts.png" width="240" alt="Contact list with My Card, A–Z sections and a letter index"> |
-| **Contact detail** | **Recents** | **New contact** |
-| <img src="docs/screenshots/contact-detail.png" width="240" alt="Contact detail with message, call and favourite actions and recent calls"> | <img src="docs/screenshots/recents.png" width="240" alt="Recent calls with caller ID, missed calls in red and grouped repeats"> | <img src="docs/screenshots/new-contact.png" width="240" alt="New contact form"> |
-| **Incoming call** | **In a call** | **Not on Dialer** |
-| <img src="docs/screenshots/incoming.png" width="240" alt="Incoming call with Accept and Decline"> | <img src="docs/screenshots/call.png" width="240" alt="Connected call with timer, mute and keypad"> | <img src="docs/screenshots/not-on-dialer.png" width="240" alt="A number that isn't on Dialer, with Call from your phone"> |
+| <img src="docs/screenshots/light-login.png" width="240" alt="Log in screen in light mode"> | <img src="docs/screenshots/light-keypad.png" width="240" alt="Keypad in light mode"> | <img src="docs/screenshots/light-contacts.png" width="240" alt="Contacts in light mode"> |
+| **Recents** | **In a call** | **My Card** |
+| <img src="docs/screenshots/light-recents.png" width="240" alt="Recents in light mode"> | <img src="docs/screenshots/light-call.png" width="240" alt="A call in light mode"> | <img src="docs/screenshots/light-account.png" width="240" alt="My Card with the System, Light and Dark appearance switch"> |
 
-All screenshots are from the running app with real accounts; the call is a real browser-to-browser call.
+All screenshots are from the running app with real accounts; the calls are real browser-to-browser calls. The design was made in Claude Design first and then built.
 
 ## Features
 
 **Accounts**
 - Sign up with your name, phone number, email and password. Your phone number is how other Dialer users call you.
 - Log in, stay logged in across reloads, and log out from **My Card** (top of Contacts). An expired session sends you back to the login screen.
+- The eye button in a password field shows or hides what you typed. Sign-up also shows how strong your password is.
+- **Appearance:** light and dark themes. Dialer follows your device until you pick System, Light or Dark on My Card.
 - Your contacts and call history are stored on the server and private to your account.
 
 **Keypad**
@@ -43,6 +57,7 @@ All screenshots are from the running app with real accounts; the call is a real 
 **Favorites**: starred contacts. Tap a contact to call; tap ⓘ for details.
 
 **Recents**
+- Calls are listed under **Today**, **Yesterday** and **Earlier**.
 - Only back-to-back calls with the same number, type and day are grouped, e.g. "Daniel White (3)".
 - Incoming, outgoing and missed calls each have their own icon.
 - *All / Missed* filter, an ⓘ button that opens the contact (or creates one for an unknown number), and *Edit* mode to delete rows or clear everything.
@@ -53,7 +68,7 @@ All screenshots are from the running app with real accounts; the call is a real 
 - Phone-like outcomes: *Busy*, *No answer*, *Declined*, *Not available right now*, *Call dropped*, and *Missed call* for the person called. Missed calls show in Recents.
 - Recents shows the caller's Dialer name (like caller ID) when the number isn't in your contacts.
 - Dialling a number that isn't on Dialer offers **Call from your phone**, which hands the number to your device's phone app.
-- **Mute** turns off your microphone, and the in-call **keypad** sends real touch tones. Speaker, Add Call, Video and Contacts are shown but disabled: browsers can't switch to the loudspeaker, and calls are one-to-one audio.
+- **Mute** turns off your microphone, and the in-call **keypad** sends real touch tones. **Speaker** is shown but disabled, because browsers can't switch to the loudspeaker.
 - If you leave the call screen during a call, a green **Return to call** banner takes you back.
 
 ## Keyboard shortcuts
