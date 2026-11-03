@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { filter, map } from 'rxjs';
 import { NotificationComponent } from './components/atoms/notification.component';
 import { CallService } from './core/services/calls/call.service';
+import { AuthService } from './core/services/auth/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -25,4 +26,11 @@ export class App {
 
   /** Green "return to call" pill while a call runs and the user is on another screen. */
   showCallBanner = computed(() => !!this.calls.call() && !this.#url().startsWith('/call'));
+
+  constructor() {
+    // Check the saved session is still valid; a rejected token is logged out by the interceptor.
+    inject(AuthService)
+      .refresh()
+      .catch(() => undefined);
+  }
 }

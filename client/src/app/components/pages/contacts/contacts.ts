@@ -2,11 +2,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Component, computed, inject, signal } from '@angular/core';
 import { SearchInputComponent } from '../../atoms/search-input/search-input.component';
 import { ContactListComponent } from '../../molecules/contact-list/contact-list.component';
+import { AvatarComponent } from '../../atoms/avatar/avatar.component';
 import { MatIconModule } from '@angular/material/icon';
 import { TabBar } from '../../organisms/tab-bar/tab-bar';
 import { ContactService } from '../../../core/services/contacts/contact.service';
 import { Contact, fullName } from '../../../core/services/contacts/contact.model';
 import { formatPhone, normalizePhone } from '../../../core/utils/phone';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { nameInitials } from '../../../core/services/auth/auth.model';
 
 const INDEX_LETTERS = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
 
@@ -22,7 +25,7 @@ function sectionLetter(contact: Contact): string {
 @Component({
   selector: 'app-contacts-page',
   standalone: true,
-  imports: [MatIconModule, RouterLink, SearchInputComponent, ContactListComponent, TabBar],
+  imports: [MatIconModule, RouterLink, SearchInputComponent, ContactListComponent, AvatarComponent, TabBar],
   templateUrl: './contacts.html',
 })
 export class ContactsPage {
@@ -35,6 +38,9 @@ export class ContactsPage {
   query = signal('');
   indexLetters = INDEX_LETTERS;
   formatPhone = formatPhone;
+
+  me = inject(AuthService).user;
+  myInitials = computed(() => nameInitials(this.me()?.fullName ?? ''));
 
   totalContacts = computed(() => this.#contactService.contacts().length);
 

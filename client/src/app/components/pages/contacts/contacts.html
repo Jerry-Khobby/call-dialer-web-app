@@ -26,6 +26,20 @@
       (searchChange)="query.set($event)"
     ></app-search-input>
 
+    <!-- My Card -->
+    @if (me(); as user) { @if (!addNumber && !query()) {
+    <a
+      routerLink="/account"
+      class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/5 transition border-b border-white/5"
+    >
+      <app-avatar [initials]="myInitials()" [size]="48"></app-avatar>
+      <span class="flex flex-col min-w-0">
+        <span class="font-semibold truncate">{{ user.fullName }}</span>
+        <span class="text-xs text-gray-400">My Card · {{ formatPhone(user.phoneNumber) }}</span>
+      </span>
+    </a>
+    } }
+
     <!-- Contact List (scrollable) with alphabet index -->
     <div class="relative">
       <div class="overflow-y-auto max-h-[62vh] pr-6 custom-scroll" id="contact-scroll">

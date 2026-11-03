@@ -1,0 +1,87 @@
+<main class="min-h-screen flex flex-col items-center justify-center px-4 py-10">
+  <div class="w-full max-w-sm flex flex-col gap-6">
+    <div class="flex flex-col items-center gap-3 text-center">
+      <div class="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+        <mat-icon fontIcon="phone" class="icon-lg"></mat-icon>
+      </div>
+      <h1 class="text-2xl font-bold">Create your account</h1>
+      <p class="text-sm text-gray-400">Other Dialer users call you on your phone number, for free.</p>
+    </div>
+
+    <form class="flex flex-col gap-3" (ngSubmit)="submit()" novalidate>
+      <label class="field" [class.field-invalid]="submitted() && errors().fullName">
+        <span class="sr-only">Full name</span>
+        <input
+          type="text"
+          name="fullName"
+          placeholder="Full name"
+          autocomplete="name"
+          [ngModel]="fullName()"
+          (ngModelChange)="fullName.set($event)"
+        />
+      </label>
+      @if (submitted() && errors().fullName) {
+      <p class="form-hint">{{ errors().fullName }}</p>
+      }
+
+      <label class="field" [class.field-invalid]="submitted() && errors().phoneNumber">
+        <span class="sr-only">Your phone number</span>
+        <input
+          type="tel"
+          name="phoneNumber"
+          placeholder="Your phone number"
+          autocomplete="tel"
+          inputmode="tel"
+          [ngModel]="phoneNumber()"
+          (ngModelChange)="phoneNumber.set($event)"
+        />
+      </label>
+      @if (submitted() && errors().phoneNumber) {
+      <p class="form-hint">{{ errors().phoneNumber }}</p>
+      }
+
+      <label class="field" [class.field-invalid]="submitted() && errors().email">
+        <span class="sr-only">Email</span>
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          autocomplete="email"
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
+        />
+      </label>
+      @if (submitted() && errors().email) {
+      <p class="form-hint">{{ errors().email }}</p>
+      }
+
+      <label class="field" [class.field-invalid]="submitted() && errors().password">
+        <span class="sr-only">Password</span>
+        <input
+          type="password"
+          name="password"
+          placeholder="Password (at least 8 characters)"
+          autocomplete="new-password"
+          [ngModel]="password()"
+          (ngModelChange)="password.set($event)"
+        />
+      </label>
+      @if (submitted() && errors().password) {
+      <p class="form-hint">{{ errors().password }}</p>
+      }
+
+      @if (error()) {
+      <p class="text-sm text-red-400" role="alert">{{ error() }}</p>
+      }
+
+      <button type="submit" class="btn-primary mt-2" [disabled]="busy()">
+        {{ busy() ? 'Creating account…' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-400">
+      Already have an account?
+      <a routerLink="/login" [queryParams]="{ returnUrl }" class="text-blue-400 hover:text-blue-300">Log in</a>
+    </p>
+  </div>
+</main>
