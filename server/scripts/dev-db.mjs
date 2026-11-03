@@ -9,7 +9,8 @@ const dbPath = fileURLToPath(new URL('../.mongo-data', import.meta.url));
 mkdirSync(dbPath, { recursive: true });
 
 const mongo = await MongoMemoryServer.create({
-  instance: { port: 27017, dbPath, storageEngine: 'wiredTiger' },
+  // A generous start-up timeout: after an abrupt stop, MongoDB first recovers its data files.
+  instance: { port: 27017, dbPath, storageEngine: 'wiredTiger', launchTimeout: 60_000 },
 });
 console.log(`MongoDB is running at ${mongo.getUri()}`);
 console.log(`Data is stored in ${dbPath}. Press Ctrl+C to stop.`);
