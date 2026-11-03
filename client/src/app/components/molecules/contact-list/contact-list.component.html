@@ -1,9 +1,9 @@
-<ul class="flex flex-col divide-y divide-white/5">
+<ul class="flex flex-col">
   @for (contact of contacts; track contact.id) {
-  <li>
+  <li class="border-b border-divider last:border-b-0">
     <button
       type="button"
-      class="w-full text-left px-2 rounded-lg hover:bg-white/5 transition cursor-pointer"
+      class="w-full text-left -mx-2 px-2 rounded-xl hover:bg-surface transition cursor-pointer"
       (click)="contactSelected.emit(contact)"
     >
       <app-contact-item [contact]="contact" [showPhone]="showPhone"></app-contact-item>

@@ -2,6 +2,7 @@ import { Component, computed, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
 import { NotificationComponent } from './components/atoms/notification.component';
 import { CallService } from './core/services/calls/call.service';
 import { AuthService } from './core/services/auth/auth.service';
@@ -11,7 +12,7 @@ import { NotificationService } from './core/services/notification/notification.s
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet,RouterLink,NotificationComponent],
+  imports: [RouterOutlet,RouterLink,MatIconModule,NotificationComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

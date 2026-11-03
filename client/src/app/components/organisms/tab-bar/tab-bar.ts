@@ -13,7 +13,7 @@ export class TabBar {
   tabs = [
     { path: '/favorites', label: 'Favorites', icon: 'star' },
     { path: '/recents', label: 'Recents', icon: 'history' },
-    { path: '/contacts', label: 'Contacts', icon: 'contacts' },
+    { path: '/contacts', label: 'Contacts', icon: 'person' },
     { path: '/keypad', label: 'Keypad', icon: 'dialpad' },
   ];
 }

@@ -1,9 +1,9 @@
 @if (showCallBanner()) {
 <a
   routerLink="/call"
-  class="fixed top-3 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 rounded-full bg-green-500 px-4 py-1.5 text-sm font-medium text-white shadow-lg hover:bg-green-400"
+  class="fixed top-3 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 rounded-full bg-accent px-4 h-9 text-sm font-bold text-on-accent shadow-lg hover:brightness-105"
 >
-  <span class="material-icons text-base leading-none" aria-hidden="true">call</span>
+  <mat-icon fontIcon="call" class="icon-sm" aria-hidden="true"></mat-icon>
   Return to call
 </a>
 }

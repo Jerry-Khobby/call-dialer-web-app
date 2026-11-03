@@ -1,13 +1,13 @@
 @if (notification(); as n) {
 <div class="notification-container" role="status" aria-live="polite">
   <div
-    class="flex items-center gap-3 rounded-2xl border px-4 py-2.5 text-sm shadow-lg backdrop-blur-md"
-    [ngClass]="severityClasses[n.severity]"
+    class="flex items-center gap-3 rounded-2xl border border-line bg-sheet pl-3 pr-2 py-2.5 text-sm font-medium text-fg shadow-xl max-w-[22rem]"
   >
-    <span>{{ n.text }}</span>
+    <mat-icon [fontIcon]="severityIcons[n.severity].icon" class="icon-md shrink-0" [style.color]="severityIcons[n.severity].color"></mat-icon>
+    <span class="flex-1">{{ n.text }}</span>
     <button
       type="button"
-      class="flex items-center opacity-70 hover:opacity-100 cursor-pointer"
+      class="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:bg-chip hover:text-fg cursor-pointer"
       aria-label="Dismiss notification"
       (click)="onClose()"
     >

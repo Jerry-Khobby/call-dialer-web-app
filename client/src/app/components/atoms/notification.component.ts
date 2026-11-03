@@ -17,11 +17,12 @@ export class NotificationComponent{
 notificationService = inject(NotificationService);
 notification = this.notificationService.notification;
 
-severityClasses: Record<NotificationSeverity, string> = {
-  success: 'bg-green-500/15 border-green-400/30 text-green-200',
-  info: 'bg-blue-500/15 border-blue-400/30 text-blue-200',
-  warning: 'bg-amber-500/15 border-amber-400/30 text-amber-200',
-  error: 'bg-red-500/15 border-red-400/30 text-red-200',
+// A solid card in both themes; the icon carries the colour (and the meaning).
+severityIcons: Record<NotificationSeverity, { icon: string; color: string }> = {
+  success: { icon: 'check_circle', color: 'var(--c-accent-fg)' },
+  info: { icon: 'info', color: 'var(--c-link)' },
+  warning: { icon: 'warning', color: 'var(--c-warn-fg)' },
+  error: { icon: 'error', color: 'var(--c-danger-fg)' },
 };
 
 onClose(){

@@ -1,17 +1,19 @@
 <nav
-  class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-md shadow-lg rounded-3xl px-3 py-2 flex justify-between gap-1 sm:gap-3 border border-white/10 z-40"
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-nav-line bg-nav/95 backdrop-blur pb-[max(env(safe-area-inset-bottom),12px)]"
   aria-label="Main"
 >
-  @for (tab of tabs; track tab.path) {
-  <a
-    [routerLink]="tab.path"
-    routerLinkActive="active-tab"
-    [routerLinkActiveOptions]="{ exact: false }"
-    ariaCurrentWhenActive="page"
-    class="tab-item"
-  >
-    <mat-icon [fontIcon]="tab.icon" class="text-2xl"></mat-icon>
-    <span class="text-xs">{{ tab.label }}</span>
-  </a>
-  }
+  <div class="mx-auto grid max-w-md grid-cols-4 px-2 pt-2">
+    @for (tab of tabs; track tab.path) {
+    <a
+      [routerLink]="tab.path"
+      routerLinkActive="active-tab"
+      [routerLinkActiveOptions]="{ exact: false }"
+      ariaCurrentWhenActive="page"
+      class="tab-item h-12"
+    >
+      <mat-icon [fontIcon]="tab.icon" class="icon-md"></mat-icon>
+      <span>{{ tab.label }}</span>
+    </a>
+    }
+  </div>
 </nav>

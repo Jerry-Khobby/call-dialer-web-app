@@ -1,9 +1,9 @@
-<div class="flex items-center gap-3 py-2">
+<div class="flex items-center gap-3 py-2.5">
   <app-avatar [initials]="initials(contact)"></app-avatar>
   <div class="flex flex-col min-w-0">
-    <span class="text-white text-[15px] font-medium truncate">{{ fullName(contact) }}</span>
+    <span class="text-base font-medium text-fg truncate">{{ fullName(contact) }}</span>
     @if (showPhone) {
-    <span class="text-gray-400 text-sm">{{ formatPhone(contact.phoneNumber) }}</span>
+    <span class="text-[13px] text-muted">{{ formatPhone(contact.phoneNumber) }}</span>
     }
   </div>
 </div>

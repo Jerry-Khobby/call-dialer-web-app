@@ -17,10 +17,10 @@ export class KeypadButtonComponent {
   }
 
   // Glyphs don't sit in the middle of their line box: * is drawn small and near the top,
-  // so it's enlarged and both are nudged down to land in the middle of the circle.
+  // so it's enlarged and nudged down to land in the middle of the circle (# needs nothing).
   get symbolClass() {
     return this.label === '*'
-      ? 'leading-none text-5xl translate-y-[0.15em]'
-      : 'leading-none text-3xl translate-y-[0.05em]';
+      ? 'leading-none text-5xl translate-y-[0.18em]'
+      : 'leading-none text-3xl';
   }
 }

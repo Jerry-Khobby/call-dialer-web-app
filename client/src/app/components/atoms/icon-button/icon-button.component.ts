@@ -9,18 +9,24 @@ import { CommonModule } from '@angular/common';
   template: `
     <button
       type="button"
-      class="flex flex-col items-center justify-center text-center text-white disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
+      class="group flex flex-col items-center justify-center gap-2 text-center disabled:cursor-not-allowed cursor-pointer"
       [disabled]="disabled"
       [attr.aria-pressed]="toggle ? active : null"
       (click)="pressed.emit()"
     >
-      <div
-        class="w-16 h-16 rounded-full flex items-center justify-center transition"
-        [ngClass]="active ? 'bg-white text-black' : 'bg-white/10 hover:bg-white/20'"
+      <span
+        class="w-[72px] h-[72px] rounded-full flex items-center justify-center transition"
+        [ngClass]="
+          disabled
+            ? 'bg-raised/60 text-disabled'
+            : active
+              ? 'bg-fg text-bg'
+              : 'bg-raised text-fg group-hover:brightness-110'
+        "
       >
         <mat-icon [fontIcon]="icon" class="icon-lg"></mat-icon>
-      </div>
-      <span class="text-xs mt-1.5 opacity-80">{{ label }}</span>
+      </span>
+      <span class="text-[13px] font-semibold" [ngClass]="disabled ? 'text-subtle' : 'text-label'">{{ label }}</span>
     </button>
   `,
 })

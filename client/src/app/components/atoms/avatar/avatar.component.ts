@@ -1,17 +1,24 @@
 import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 
-/** Round avatar with the contact's initials, or a person icon for unknown numbers. */
+const TONES = ['blue', 'green', 'amber', 'violet'] as const;
+
+/**
+ * Round avatar with the contact's initials, or a person icon for unknown numbers.
+ * The colour comes from the initials, so a person keeps the same colour everywhere.
+ */
 @Component({
   selector: 'app-avatar',
   standalone: true,
   imports: [MatIconModule],
   template: `
     <div
-      class="rounded-full bg-gradient-to-b from-white/25 to-white/10 text-white font-medium flex items-center justify-center select-none"
+      class="rounded-full font-display font-extrabold flex items-center justify-center select-none shrink-0"
       [style.width.px]="size"
       [style.height.px]="size"
-      [style.font-size.px]="size * 0.4"
+      [style.font-size.px]="size * 0.36"
+      [style.background]="'var(--c-avatar-' + tone + '-bg)'"
+      [style.color]="'var(--c-avatar-' + tone + '-fg)'"
       aria-hidden="true"
     >
       @if (initials) {
@@ -25,4 +32,10 @@ import { MatIconModule } from '@angular/material/icon';
 export class AvatarComponent {
   @Input() initials = '';
   @Input() size = 40;
+
+  get tone(): (typeof TONES)[number] {
+    if (!this.initials) return 'blue';
+    const sum = [...this.initials].reduce((total, ch) => total + ch.charCodeAt(0), 0);
+    return TONES[sum % TONES.length];
+  }
 }
