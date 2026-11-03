@@ -1,51 +1,54 @@
-<main class="min-h-screen flex flex-col items-center justify-center px-4 py-10">
-  <div class="w-full max-w-sm flex flex-col gap-6">
-    <div class="flex flex-col items-center gap-3 text-center">
-      <div class="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
-        <mat-icon fontIcon="phone" class="icon-lg"></mat-icon>
-      </div>
-      <h1 class="text-2xl font-bold">Log in to Dialer</h1>
-      <p class="text-sm text-gray-400">Free calls to anyone else on Dialer.</p>
+<main class="mx-auto flex min-h-screen w-full max-w-md flex-col gap-8 px-6 pt-[72px] pb-10">
+  <div class="flex flex-col items-start gap-5">
+    <div class="flex h-[52px] w-[52px] items-center justify-center rounded-2xl bg-accent text-on-accent">
+      <mat-icon fontIcon="call" class="icon-md"></mat-icon>
     </div>
+    <div class="flex flex-col gap-2">
+      <h1 class="font-display text-[30px] font-extrabold tracking-tight">Welcome back</h1>
+      <p class="text-[15px] leading-relaxed text-muted">Log in to call anyone on Dialer, free.</p>
+    </div>
+  </div>
 
-    <form class="flex flex-col gap-3" (ngSubmit)="submit()" novalidate>
-      <label class="field">
-        <span class="sr-only">Email</span>
+  <form class="flex flex-col gap-[18px]" (ngSubmit)="submit()" novalidate>
+    <div class="flex flex-col gap-2">
+      <label for="login-email" class="field-label">Email</label>
+      <div class="field">
         <input
+          id="login-email"
           type="email"
           name="email"
-          placeholder="Email"
+          placeholder="you@example.com"
           autocomplete="email"
+          autocapitalize="off"
           [ngModel]="email()"
           (ngModelChange)="email.set($event)"
         />
-      </label>
-      <label class="field">
-        <span class="sr-only">Password</span>
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          autocomplete="current-password"
-          [ngModel]="password()"
-          (ngModelChange)="password.set($event)"
-        />
-      </label>
+      </div>
+    </div>
 
-      @if (error()) {
-      <p class="text-sm text-red-400" role="alert">{{ error() }}</p>
-      }
+    <div class="flex flex-col gap-2">
+      <label for="login-password" class="field-label">Password</label>
+      <app-password-input
+        inputId="login-password"
+        autocomplete="current-password"
+        [value]="password()"
+        (valueChange)="password.set($event)"
+      ></app-password-input>
+    </div>
 
-      <button type="submit" class="btn-primary mt-2" [disabled]="busy()">
-        {{ busy() ? 'Logging in…' : 'Log in' }}
-      </button>
-    </form>
-
-    <p class="text-center text-sm text-gray-400">
-      New to Dialer?
-      <a routerLink="/register" [queryParams]="{ returnUrl }" class="text-blue-400 hover:text-blue-300">
-        Create an account
-      </a>
+    @if (error()) {
+    <p class="field-error" role="alert">
+      <mat-icon fontIcon="error_outline" class="icon-sm"></mat-icon>{{ error() }}
     </p>
-  </div>
+    }
+
+    <button type="submit" class="btn-primary mt-2" [disabled]="busy()">
+      {{ busy() ? 'Logging in…' : 'Log in' }}
+    </button>
+  </form>
+
+  <p class="mt-auto text-center text-[15px] text-muted">
+    New to Dialer?
+    <a routerLink="/register" [queryParams]="{ returnUrl }" class="font-semibold text-link hover:underline">Create an account</a>
+  </p>
 </main>

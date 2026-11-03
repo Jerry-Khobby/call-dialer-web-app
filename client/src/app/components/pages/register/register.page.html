@@ -1,87 +1,111 @@
-<main class="min-h-screen flex flex-col items-center justify-center px-4 py-10">
-  <div class="w-full max-w-sm flex flex-col gap-6">
-    <div class="flex flex-col items-center gap-3 text-center">
-      <div class="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
-        <mat-icon fontIcon="phone" class="icon-lg"></mat-icon>
-      </div>
-      <h1 class="text-2xl font-bold">Create your account</h1>
-      <p class="text-sm text-gray-400">Other Dialer users call you on your phone number, for free.</p>
-    </div>
+<main class="mx-auto flex min-h-screen w-full max-w-md flex-col gap-6 px-6 pt-7 pb-9">
+  <a
+    routerLink="/login"
+    [queryParams]="{ returnUrl }"
+    class="-ml-2.5 flex h-11 w-11 items-center justify-center rounded-xl text-fg hover:bg-chip"
+    aria-label="Back to log in"
+  >
+    <mat-icon fontIcon="chevron_left" class="icon-lg"></mat-icon>
+  </a>
 
-    <form class="flex flex-col gap-3" (ngSubmit)="submit()" novalidate>
-      <label class="field" [class.field-invalid]="submitted() && errors().fullName">
-        <span class="sr-only">Full name</span>
+  <div class="flex flex-col gap-2">
+    <h1 class="font-display text-[30px] font-extrabold tracking-tight">Create your account</h1>
+    <p class="text-[15px] leading-relaxed text-muted">Other Dialer users reach you on your phone number.</p>
+  </div>
+
+  <form class="flex flex-col gap-4" (ngSubmit)="submit()" novalidate>
+    <div class="flex flex-col gap-2">
+      <label for="reg-name" class="field-label">Full name</label>
+      <div class="field" [class.field-invalid]="submitted() && errors().fullName">
         <input
+          id="reg-name"
           type="text"
           name="fullName"
-          placeholder="Full name"
           autocomplete="name"
+          [attr.aria-invalid]="(submitted() && !!errors().fullName) || null"
           [ngModel]="fullName()"
           (ngModelChange)="fullName.set($event)"
         />
-      </label>
+      </div>
       @if (submitted() && errors().fullName) {
-      <p class="form-hint">{{ errors().fullName }}</p>
+      <p class="field-error"><mat-icon fontIcon="error_outline" class="icon-sm"></mat-icon>{{ errors().fullName }}</p>
       }
+    </div>
 
-      <label class="field" [class.field-invalid]="submitted() && errors().phoneNumber">
-        <span class="sr-only">Your phone number</span>
+    <div class="flex flex-col gap-2">
+      <label for="reg-phone" class="field-label">Phone number</label>
+      <div class="field" [class.field-invalid]="submitted() && errors().phoneNumber">
         <input
+          id="reg-phone"
           type="tel"
           name="phoneNumber"
-          placeholder="Your phone number"
           autocomplete="tel"
           inputmode="tel"
+          aria-describedby="reg-phone-hint"
+          [attr.aria-invalid]="(submitted() && !!errors().phoneNumber) || null"
           [ngModel]="phoneNumber()"
           (ngModelChange)="phoneNumber.set($event)"
         />
-      </label>
+      </div>
       @if (submitted() && errors().phoneNumber) {
-      <p class="form-hint">{{ errors().phoneNumber }}</p>
+      <p class="field-error"><mat-icon fontIcon="error_outline" class="icon-sm"></mat-icon>{{ errors().phoneNumber }}</p>
+      } @else {
+      <p id="reg-phone-hint" class="field-hint">This is the number people dial to call you.</p>
       }
+    </div>
 
-      <label class="field" [class.field-invalid]="submitted() && errors().email">
-        <span class="sr-only">Email</span>
+    <div class="flex flex-col gap-2">
+      <label for="reg-email" class="field-label">Email</label>
+      <div class="field" [class.field-invalid]="submitted() && errors().email">
         <input
+          id="reg-email"
           type="email"
           name="email"
-          placeholder="Email"
           autocomplete="email"
+          autocapitalize="off"
+          [attr.aria-invalid]="(submitted() && !!errors().email) || null"
           [ngModel]="email()"
           (ngModelChange)="email.set($event)"
         />
-      </label>
+      </div>
       @if (submitted() && errors().email) {
-      <p class="form-hint">{{ errors().email }}</p>
+      <p class="field-error"><mat-icon fontIcon="error_outline" class="icon-sm"></mat-icon>{{ errors().email }}</p>
       }
+    </div>
 
-      <label class="field" [class.field-invalid]="submitted() && errors().password">
-        <span class="sr-only">Password</span>
-        <input
-          type="password"
-          name="password"
-          placeholder="Password (at least 8 characters)"
-          autocomplete="new-password"
-          [ngModel]="password()"
-          (ngModelChange)="password.set($event)"
-        />
-      </label>
+    <div class="flex flex-col gap-2">
+      <label for="reg-password" class="field-label">Password</label>
+      <app-password-input
+        inputId="reg-password"
+        autocomplete="new-password"
+        describedBy="reg-password-hint"
+        [invalid]="submitted() && !!errors().password"
+        [value]="password()"
+        (valueChange)="password.set($event)"
+      ></app-password-input>
+      <div class="grid grid-cols-4 gap-1.5" aria-hidden="true">
+        @for (bar of [1, 2, 3, 4]; track bar) {
+        <span class="h-1 rounded-full" [class]="bar <= strength().score ? strength().barClass : 'bg-line'"></span>
+        }
+      </div>
       @if (submitted() && errors().password) {
-      <p class="form-hint">{{ errors().password }}</p>
+      <p id="reg-password-hint" class="field-error"><mat-icon fontIcon="error_outline" class="icon-sm"></mat-icon>{{ errors().password }}</p>
+      } @else {
+      <p id="reg-password-hint" class="field-hint">{{ strength().hint }}</p>
       }
+    </div>
 
-      @if (error()) {
-      <p class="text-sm text-red-400" role="alert">{{ error() }}</p>
-      }
+    @if (error()) {
+    <p class="field-error" role="alert"><mat-icon fontIcon="error_outline" class="icon-sm"></mat-icon>{{ error() }}</p>
+    }
 
-      <button type="submit" class="btn-primary mt-2" [disabled]="busy()">
-        {{ busy() ? 'Creating account…' : 'Create account' }}
-      </button>
-    </form>
+    <button type="submit" class="btn-primary mt-1.5" [disabled]="busy()">
+      {{ busy() ? 'Creating account…' : 'Create account' }}
+    </button>
+  </form>
 
-    <p class="text-center text-sm text-gray-400">
-      Already have an account?
-      <a routerLink="/login" [queryParams]="{ returnUrl }" class="text-blue-400 hover:text-blue-300">Log in</a>
-    </p>
-  </div>
+  <p class="mt-auto text-center text-[15px] text-muted">
+    Already on Dialer?
+    <a routerLink="/login" [queryParams]="{ returnUrl }" class="font-semibold text-link hover:underline">Log in</a>
+  </p>
 </main>

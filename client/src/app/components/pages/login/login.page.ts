@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { apiErrorMessage } from '../../../core/api/api';
+import { PasswordInputComponent } from '../../atoms/password-input/password-input.component';
 
 /** Where to go after signing in: only paths inside the app, never another site. */
 export function safeReturnUrl(value: string | null): string {
@@ -13,7 +14,7 @@ export function safeReturnUrl(value: string | null): string {
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, MatIconModule],
+  imports: [FormsModule, RouterLink, MatIconModule, PasswordInputComponent],
   templateUrl: './login.page.html',
 })
 export class LoginPage {

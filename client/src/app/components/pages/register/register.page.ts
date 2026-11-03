@@ -6,11 +6,12 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { apiErrorMessage } from '../../../core/api/api';
 import { isValidPhone } from '../../../core/utils/phone';
 import { safeReturnUrl } from '../login/login.page';
+import { PasswordInputComponent } from '../../atoms/password-input/password-input.component';
 
 @Component({
   selector: 'app-register-page',
   standalone: true,
-  imports: [FormsModule, RouterLink, MatIconModule],
+  imports: [FormsModule, RouterLink, MatIconModule, PasswordInputComponent],
   templateUrl: './register.page.html',
 })
 export class RegisterPage {
@@ -38,6 +39,17 @@ export class RegisterPage {
         ? ''
         : 'Use 8 to 72 characters.',
   }));
+
+  /** A rough guide shown under the password: 0–4 bars and a hint. */
+  strength = computed(() => {
+    const password = this.password();
+    if (!password) return { score: 0, barClass: 'bg-line', hint: 'At least 8 characters.' };
+    if (password.length < 8) return { score: 1, barClass: 'bg-danger', hint: 'Too short: at least 8 characters.' };
+    const variety = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((re) => re.test(password)).length;
+    const score = Math.min(4, 2 + (password.length >= 12 ? 1 : 0) + (variety >= 3 ? 1 : 0));
+    const hints = ['', '', 'Okay. Longer or mixed characters make it stronger.', 'Good password.', 'Strong password.'];
+    return { score, barClass: score >= 3 ? 'bg-accent' : 'bg-warn', hint: hints[score] };
+  });
 
   valid = computed(() => Object.values(this.errors()).every((e) => !e));
 
