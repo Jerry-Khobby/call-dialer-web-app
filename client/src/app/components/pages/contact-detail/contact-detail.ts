@@ -38,9 +38,15 @@ export class ContactDetailPage {
   });
 
   callLabels: Record<CallType, string> = {
-    outgoing: 'Outgoing Call',
-    incoming: 'Incoming Call',
-    missed: 'Missed Call',
+    outgoing: 'Outgoing',
+    incoming: 'Incoming',
+    missed: 'Missed',
+  };
+
+  callIcons: Record<CallType, string> = {
+    outgoing: 'call_made',
+    incoming: 'call_received',
+    missed: 'call_missed',
   };
 
   fullName = fullName;

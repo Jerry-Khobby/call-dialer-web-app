@@ -1,40 +1,50 @@
-<main class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
-  <div class="w-full max-w-sm px-4 pt-10">
-    <div class="flex items-center mb-6">
-      <a routerLink="/contacts" class="flex items-center text-blue-400 hover:text-blue-300">
-        <mat-icon fontIcon="chevron_left"></mat-icon>
-        Contacts
-      </a>
-    </div>
+<main class="screen flex flex-col gap-5">
+  <header class="flex items-center">
+    <a routerLink="/contacts" class="-ml-2 flex h-11 items-center text-base font-medium text-link">
+      <mat-icon fontIcon="chevron_left" class="icon-lg"></mat-icon>Contacts
+    </a>
+  </header>
 
-    @if (user(); as me) {
-    <div class="flex flex-col items-center gap-3">
-      <app-avatar [initials]="initials()" [size]="96"></app-avatar>
-      <h1 class="text-3xl font-semibold text-center">{{ me.fullName }}</h1>
-      <p class="text-xs uppercase tracking-wider text-gray-500">My Card</p>
-    </div>
-
-    <div class="mt-6 rounded-2xl bg-white/5 divide-y divide-white/10">
-      <div class="px-4 py-3">
-        <span class="block text-xs text-gray-400">my number</span>
-        <span class="text-lg">{{ formatPhone(me.phoneNumber) }}</span>
-        <span class="block text-xs text-gray-500 mt-1">Other Dialer users call you on this number.</span>
-      </div>
-      <div class="px-4 py-3">
-        <span class="block text-xs text-gray-400">email</span>
-        <span>{{ me.email }}</span>
-      </div>
-    </div>
-
-    <button
-      type="button"
-      class="w-full mt-4 rounded-2xl bg-white/5 hover:bg-white/10 px-4 py-3 text-red-400 transition cursor-pointer"
-      (click)="logout()"
-    >
-      Log Out
-    </button>
-    }
+  @if (user(); as me) {
+  <div class="flex flex-col items-center gap-2.5 text-center">
+    <app-avatar [initials]="initials()" [size]="104"></app-avatar>
+    <h1 class="font-display text-[28px] font-extrabold tracking-tight">{{ me.fullName }}</h1>
+    <p class="text-xs font-bold uppercase tracking-widest text-subtle">My Card</p>
   </div>
+
+  <section class="divide-y divide-divider rounded-2xl bg-surface">
+    <div class="px-4 py-3.5">
+      <span class="text-xs font-semibold text-muted">my number</span>
+      <p class="font-display text-[19px] font-bold tracking-wide">{{ formatPhone(me.phoneNumber) }}</p>
+      <p class="mt-1 text-[13px] text-muted">Other Dialer users call you on this number.</p>
+    </div>
+    <div class="px-4 py-3.5">
+      <span class="text-xs font-semibold text-muted">email</span>
+      <p class="text-[15px]">{{ me.email }}</p>
+    </div>
+  </section>
+
+  <!-- Appearance -->
+  <section class="rounded-2xl bg-surface px-4 py-3.5">
+    <h2 id="appearance-label" class="mb-2.5 text-xs font-semibold text-muted">Appearance</h2>
+    <div class="grid grid-cols-3 rounded-xl bg-chip p-1" role="radiogroup" aria-labelledby="appearance-label">
+      @for (option of themeOptions; track option.value) {
+      <button
+        type="button"
+        role="radio"
+        class="flex h-10 items-center justify-center gap-1.5 rounded-[9px] text-sm font-semibold transition cursor-pointer"
+        [class]="theme.choice() === option.value ? 'bg-selected text-fg shadow-sm' : 'text-muted hover:text-fg'"
+        [attr.aria-checked]="theme.choice() === option.value"
+        (click)="theme.choice.set(option.value)"
+      >
+        <mat-icon [fontIcon]="option.icon" class="icon-sm"></mat-icon>{{ option.label }}
+      </button>
+      }
+    </div>
+  </section>
+
+  <button type="button" class="btn-secondary text-danger-fg" (click)="logout()">Log Out</button>
+  }
 </main>
 
 <app-tab-bar></app-tab-bar>

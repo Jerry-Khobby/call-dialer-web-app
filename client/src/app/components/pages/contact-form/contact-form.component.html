@@ -1,109 +1,115 @@
-<div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-  <form
-    class="contact-modal animate-slide-up"
-    role="dialog"
-    [attr.aria-label]="editingId ? 'Edit contact' : 'New contact'"
-    (ngSubmit)="done()"
-    novalidate
-  >
-    <!-- Header -->
-    <div class="w-full flex items-center justify-between px-3 py-2">
-      <button type="button" (click)="cancel()" class="icon-btn" aria-label="Cancel">
-        <mat-icon fontIcon="close"></mat-icon>
-      </button>
+<form
+  class="mx-auto flex min-h-screen w-full max-w-md flex-col gap-6 bg-bg px-5 pt-3 pb-8 animate-slide-up"
+  [attr.aria-label]="editingId ? 'Edit contact' : 'New contact'"
+  (ngSubmit)="done()"
+  novalidate
+>
+  <!-- Header -->
+  <header class="grid h-[52px] grid-cols-3 items-center">
+    <button type="button" (click)="cancel()" class="flex h-11 items-center justify-self-start text-base font-medium text-link cursor-pointer">
+      Cancel
+    </button>
+    <h1 class="justify-self-center whitespace-nowrap text-[17px] font-bold">
+      {{ editingId ? 'Edit Contact' : 'New Contact' }}
+    </h1>
+    <button
+      type="submit"
+      class="flex h-11 items-center justify-self-end px-0.5 text-base font-bold text-accent-fg disabled:opacity-40 cursor-pointer"
+      [disabled]="busy() || (submitted() && !canSave())"
+    >
+      Done
+    </button>
+  </header>
 
-      <span class="text-white font-medium text-[16px] tracking-wide">
-        {{ editingId ? 'Edit Contact' : 'New Contact' }}
+  <!-- Avatar -->
+  <div class="flex justify-center">
+    <app-avatar [initials]="initials({ firstName: firstName(), lastName: lastName() })" [size]="96"></app-avatar>
+  </div>
+
+  <!-- Name -->
+  <div class="flex flex-col gap-2">
+    <div
+      class="overflow-hidden rounded-2xl border bg-surface"
+      [class]="submitted() && firstNameError() ? 'border-danger-fg' : 'border-transparent focus-within:border-link'"
+    >
+      <label for="cf-first" class="sr-only">First name</label>
+      <input
+        id="cf-first"
+        type="text"
+        placeholder="First name"
+        name="firstName"
+        maxlength="50"
+        autocomplete="given-name"
+        class="h-[52px] w-full border-b border-divider bg-transparent px-4 text-base font-medium text-fg outline-none"
+        [attr.aria-invalid]="(submitted() && !!firstNameError()) || null"
+        [ngModel]="firstName()"
+        (ngModelChange)="firstName.set($event)"
+        required
+      />
+      <label for="cf-last" class="sr-only">Last name</label>
+      <input
+        id="cf-last"
+        type="text"
+        placeholder="Last name"
+        name="lastName"
+        maxlength="50"
+        autocomplete="family-name"
+        class="h-[52px] w-full bg-transparent px-4 text-base font-medium text-fg outline-none"
+        [ngModel]="lastName()"
+        (ngModelChange)="lastName.set($event)"
+      />
+    </div>
+    @if (submitted() && firstNameError()) {
+    <p class="field-error px-1"><mat-icon fontIcon="error_outline" class="icon-sm"></mat-icon>{{ firstNameError() }}</p>
+    }
+  </div>
+
+  <!-- Phone -->
+  <div class="flex flex-col gap-2">
+    <div
+      class="flex items-center rounded-2xl border-[1.5px] bg-surface pl-4"
+      [class]="duplicate() ? 'border-warn' : submitted() && phoneError() ? 'border-danger-fg' : 'border-transparent focus-within:border-link'"
+    >
+      <label for="cf-phone" class="w-16 shrink-0 text-sm font-semibold text-muted"><span class="sr-only">Phone, </span>mobile</label>
+      <input
+        id="cf-phone"
+        type="tel"
+        name="phone"
+        autocomplete="tel"
+        inputmode="tel"
+        class="h-[52px] min-w-0 flex-1 bg-transparent pr-4 text-base font-medium tracking-wide text-fg outline-none"
+        [attr.aria-invalid]="(submitted() && !!phoneError()) || null"
+        [ngModel]="phone()"
+        (ngModelChange)="phone.set($event)"
+        required
+      />
+    </div>
+    @if (duplicate(); as existing) {
+    <p class="flex items-center gap-1.5 px-1 text-[13px] text-warn-fg" role="status">
+      <mat-icon fontIcon="info_outline" class="icon-sm"></mat-icon>
+      <span>
+        Already saved as
+        <a [routerLink]="['/contacts', existing.id]" class="font-semibold underline">{{ fullName(existing) }}</a>
       </span>
+    </p>
+    } @else if (submitted() && phoneError()) {
+    <p class="field-error px-1"><mat-icon fontIcon="error_outline" class="icon-sm"></mat-icon>{{ phoneError() }}</p>
+    }
+  </div>
 
-      <button type="submit" class="icon-btn" [disabled]="busy() || (submitted() && !canSave())" aria-label="Save contact">
-        <mat-icon fontIcon="check"></mat-icon>
-      </button>
-    </div>
-
-    <!-- Avatar -->
-    <div class="flex justify-center mt-4 mb-6">
-      <app-avatar
-        [initials]="initials({ firstName: firstName(), lastName: lastName() })"
-        [size]="104"
-      ></app-avatar>
-    </div>
-
-    <!-- Form -->
-    <div class="form-area">
-      <div class="form-row" [class.form-row-error]="submitted() && firstNameError()">
-        <input
-          type="text"
-          placeholder="First Name"
-          aria-label="First name"
-          class="form-input"
-          name="firstName"
-          maxlength="50"
-          autocomplete="given-name"
-          [ngModel]="firstName()"
-          (ngModelChange)="firstName.set($event)"
-          required
-        />
-      </div>
-      @if (submitted() && firstNameError()) {
-      <p class="form-error">{{ firstNameError() }}</p>
-      }
-
-      <div class="form-row">
-        <input
-          type="text"
-          placeholder="Last Name"
-          aria-label="Last name"
-          class="form-input"
-          name="lastName"
-          maxlength="50"
-          autocomplete="family-name"
-          [ngModel]="lastName()"
-          (ngModelChange)="lastName.set($event)"
-        />
-      </div>
-
-      <div class="form-row" [class.form-row-error]="submitted() && (phoneError() || duplicate())">
-        <input
-          type="tel"
-          placeholder="Phone"
-          aria-label="Phone"
-          class="form-input"
-          name="phone"
-          autocomplete="tel"
-          inputmode="tel"
-          [ngModel]="phone()"
-          (ngModelChange)="phone.set($event)"
-          required
-        />
-      </div>
-      @if (submitted() && phoneError()) {
-      <p class="form-error">{{ phoneError() }}</p>
-      }
-      @if (duplicate(); as existing) {
-      <p class="form-error">
-        This number is already saved as
-        <a [routerLink]="['/contacts', existing.id]" class="underline">{{ fullName(existing) }}</a>.
-      </p>
-      }
-
-      @if (editingId) {
-        @if (confirmingDelete()) {
-        <div class="flex gap-2 mt-4">
-          <button type="button" class="flex-1 form-row text-gray-300 cursor-pointer" (click)="confirmingDelete.set(false)">
-            Cancel
-          </button>
-          <button type="button" class="flex-1 form-row text-red-400 font-semibold cursor-pointer" [disabled]="busy()"
-            (click)="deleteContact()">
-            Delete
-          </button>
-        </div>
-        } @else {
-        <button type="button" class="form-row text-red-400 mt-4 cursor-pointer" (click)="confirmingDelete.set(true)">
-          Delete Contact
+  @if (editingId) {
+    @if (confirmingDelete()) {
+    <div class="mt-auto flex flex-col gap-2">
+      <p class="text-center text-sm text-muted">Delete this contact? Your call history stays.</p>
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" class="btn-secondary" (click)="confirmingDelete.set(false)">Cancel</button>
+        <button type="button" class="btn-secondary font-bold text-danger-fg" [disabled]="busy()" (click)="deleteContact()">
+          Delete
         </button>
-        }
-      }
+      </div>
     </div>
-  </form>
-</div>
+    } @else {
+    <button type="button" class="btn-secondary mt-auto text-danger-fg" (click)="confirmingDelete.set(true)">Delete Contact</button>
+    }
+  }
+</form>
