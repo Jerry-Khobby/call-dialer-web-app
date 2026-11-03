@@ -107,7 +107,7 @@ export class CallService {
   }
 
   async dial(phoneNumber: string): Promise<void> {
-    if (this.#call()) return; // one call at a time
+    if (this.#inCall()) return; // one call at a time
     this.#begin({ direction: 'outgoing', phoneNumber, status: 'dialing' });
 
     try {
@@ -121,7 +121,7 @@ export class CallService {
 
       // Hung up while we were waiting for the server.
       if (this.#call()?.status !== 'dialing') {
-        if (ack.ok && ack.callId) socket.emit('call:end', { callId: ack.callId });
+        if (ack.ok && ack.callId) this.#endOnServer('call:end', ack.callId);
         return;
       }
       if (!ack.ok) {
@@ -166,7 +166,7 @@ export class CallService {
   decline(): void {
     const call = this.#call();
     if (call?.status !== 'incoming') return;
-    if (call.id) this.#socket?.emit('call:reject', { callId: call.id });
+    if (call.id) this.#endOnServer('call:reject', call.id);
     this.#finish('Declined');
   }
 
@@ -174,7 +174,7 @@ export class CallService {
     const call = this.#call();
     if (!call || call.status === 'ended') return;
     if (call.status === 'incoming') return this.decline();
-    if (call.id) this.#socket?.emit('call:end', { callId: call.id });
+    if (call.id) this.#endOnServer('call:end', call.id);
     this.#finish(call.status === 'unavailable' ? undefined : 'Call ended');
   }
 
@@ -219,7 +219,7 @@ export class CallService {
   // ---- Signalling events ----------------------------------------------------------
 
   #onIncoming({ callId, from, offer }: IncomingCall): void {
-    if (this.#call()) {
+    if (this.#inCall()) {
       this.#socket?.emit('call:reject', { callId }); // Already on a call
       return;
     }
@@ -321,6 +321,27 @@ export class CallService {
     }
   }
 
+  /**
+   * A call is in progress unless there is none or it only shows "Call ended": that screen
+   * must not block a new call, or turn an incoming one away as "Declined".
+   */
+  #inCall(): boolean {
+    const status = this.#call()?.status;
+    return !!status && status !== 'ended';
+  }
+
+  /**
+   * Ends the call on the server, then refreshes Recents: the server records the call before
+   * it acknowledges, so reloading earlier could miss it.
+   */
+  #endOnServer(event: 'call:end' | 'call:reject', callId: string): void {
+    this.#socket
+      ?.timeout(ACK_TIMEOUT_MS)
+      .emitWithAck(event, { callId })
+      .catch(() => undefined)
+      .finally(() => this.#recents.load().catch(() => undefined));
+  }
+
   #connectedSocket(): Socket {
     if (!this.#socket?.connected) {
       throw new CallProblem("Can't reach Dialer right now. Check your connection.");
@@ -332,7 +353,8 @@ export class CallService {
 
   #begin(call: Pick<ActiveCall, 'direction' | 'phoneNumber' | 'status'> & Partial<ActiveCall>): void {
     clearTimeout(this.#closeTimer);
-    this.#returnUrl = this.#router.url.startsWith('/call') ? '/keypad' : this.#router.url;
+    // From the "Call ended" screen, keep going back to where the previous call started.
+    if (!this.#router.url.startsWith('/call')) this.#returnUrl = this.#router.url;
     this.#call.set({
       id: null,
       dialedAt: Date.now(),
@@ -352,7 +374,7 @@ export class CallService {
 
   #fail(error: unknown): void {
     const callId = this.#call()?.id;
-    if (callId) this.#socket?.emit('call:end', { callId });
+    if (callId) this.#endOnServer('call:end', callId);
     this.#finish(error instanceof CallProblem ? error.message : "Couldn't place the call");
   }
 
@@ -365,7 +387,8 @@ export class CallService {
     if (!status || status === 'ended') return;
     this.#release();
     clearInterval(this.#clock);
-    this.#recents.load().catch(() => undefined); // The server has recorded this call
+    // When the other side ended it, the server recorded the call before telling us.
+    this.#recents.load().catch(() => undefined);
 
     if (silent || !message) {
       this.#close();
