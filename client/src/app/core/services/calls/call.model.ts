@@ -12,14 +12,49 @@ export type CallRecord = {
   contactName?: string;
 };
 
-export type CallStatus = 'dialing' | 'ringing' | 'connected' | 'ended';
+export type CallStatus =
+  | 'dialing' // Getting the microphone and reaching the other person
+  | 'ringing' // Their phone is ringing
+  | 'incoming' // Someone is calling you
+  | 'connecting' // Answered; setting up the audio between the two browsers
+  | 'connected'
+  | 'unavailable' // The number isn't on Dialer: offer the phone's own dialer instead
+  | 'ended';
 
 export type ActiveCall = {
+  /** The server's id for the call, once it is known. */
+  id: string | null;
+  direction: 'outgoing' | 'incoming';
   phoneNumber: string;
+  /** Incoming calls: the caller's Dialer name. */
+  callerName?: string;
   status: CallStatus;
   dialedAt: number;
   connectedAt: number | null;
   muted: boolean;
-  speaker: boolean;
   tones: string; // digits pressed on the in-call keypad
+  /** Why the call ended or can't go through, e.g. "Busy" or "No answer". */
+  message?: string;
 };
+
+/** Messages exchanged with the server's /calls socket (server/src/modules/signaling). */
+export type CallAck =
+  | { ok: true; callId?: string }
+  | {
+      ok: false;
+      reason: 'invalid' | 'not-registered' | 'self' | 'offline' | 'busy' | 'in-call' | 'unknown-call';
+    };
+
+export type IncomingCall = {
+  callId: string;
+  from: { phoneNumber: string; fullName: string };
+  offer: RTCSessionDescriptionInit;
+};
+
+export type EndReason =
+  | 'hangup'
+  | 'cancelled'
+  | 'rejected'
+  | 'no-answer'
+  | 'disconnected'
+  | 'answered-elsewhere';

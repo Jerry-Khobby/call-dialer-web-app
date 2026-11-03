@@ -10,44 +10,95 @@
     } @else {
     <app-avatar [initials]="avatarInitials()" [size]="96"></app-avatar>
     <h1 class="text-3xl font-semibold mt-2">{{ title() }}</h1>
-    @if (contact()) {
+    @if (showNumber()) {
     <p class="text-gray-400">{{ formatPhone(call.phoneNumber) }}</p>
     }
     }
-    <p class="text-gray-300 text-sm tabular-nums" aria-live="polite">{{ status() }}</p>
+    <p class="text-gray-300 text-sm tabular-nums max-w-xs" aria-live="polite">{{ status() }}</p>
   </div>
 
-  <!-- Controls or in-call keypad -->
-  @if (showKeypad()) {
-  <app-keypad (press)="calls.sendTone($event)"></app-keypad>
-  } @else {
-  <app-call-controls
-    [muted]="call.muted"
-    [speaker]="call.speaker"
-    [disabled]="call.status === 'ended'"
-    (muteToggled)="calls.toggleMute()"
-    (speakerToggled)="calls.toggleSpeaker()"
-    (keypadOpened)="showKeypad.set(true)"
-  ></app-call-controls>
-  }
-
-  <!-- End call (+ hide keypad) -->
-  <div class="grid grid-cols-3 gap-x-8 place-items-center w-full max-w-xs">
-    <span></span>
-    <button
-      type="button"
-      (click)="calls.hangUp()"
-      [disabled]="call.status === 'ended'"
-      class="bg-red-600 hover:bg-red-500 disabled:opacity-50 transition text-white rounded-full w-[4.5rem] h-[4.5rem] flex items-center justify-center cursor-pointer"
-      aria-label="End call"
-    >
-      <mat-icon fontIcon="call_end" class="icon-lg"></mat-icon>
-    </button>
-    @if (showKeypad()) {
-    <button type="button" class="text-white/90 hover:text-white cursor-pointer" (click)="showKeypad.set(false)">
-      Hide
-    </button>
+  @switch (call.status) {
+    <!-- Someone is calling: answer or decline, like a phone's incoming-call screen -->
+    @case ('incoming') {
+    <div class="grid grid-cols-2 gap-x-20 place-items-center">
+      <div class="flex flex-col items-center gap-2">
+        <button
+          type="button"
+          (click)="calls.decline()"
+          class="bg-red-600 hover:bg-red-500 transition text-white rounded-full w-[4.5rem] h-[4.5rem] flex items-center justify-center cursor-pointer"
+          aria-label="Decline"
+        >
+          <mat-icon fontIcon="call_end" class="icon-lg"></mat-icon>
+        </button>
+        <span class="text-xs text-gray-300">Decline</span>
+      </div>
+      <div class="flex flex-col items-center gap-2">
+        <button
+          type="button"
+          (click)="calls.accept()"
+          class="bg-green-500 hover:bg-green-400 transition text-white rounded-full w-[4.5rem] h-[4.5rem] flex items-center justify-center cursor-pointer animate-pulse"
+          aria-label="Accept"
+        >
+          <mat-icon fontIcon="call" class="icon-lg"></mat-icon>
+        </button>
+        <span class="text-xs text-gray-300">Accept</span>
+      </div>
+    </div>
     }
-  </div>
+
+    <!-- Not on Dialer: offer the phone's own dialer (free for us; the user's phone plan applies) -->
+    @case ('unavailable') {
+    <div class="w-full max-w-xs flex flex-col gap-3">
+      <button
+        type="button"
+        class="w-full rounded-2xl bg-green-500 hover:bg-green-400 py-3 font-semibold flex items-center justify-center gap-2 cursor-pointer"
+        (click)="calls.callWithPhone()"
+      >
+        <mat-icon fontIcon="phone_forwarded"></mat-icon>
+        Call from your phone
+      </button>
+      <button
+        type="button"
+        class="w-full rounded-2xl bg-white/10 hover:bg-white/15 py-3 cursor-pointer"
+        (click)="calls.hangUp()"
+      >
+        Cancel
+      </button>
+    </div>
+    }
+
+    @default {
+    <!-- Controls or in-call keypad -->
+    @if (showKeypad()) {
+    <app-keypad (press)="calls.sendTone($event)"></app-keypad>
+    } @else {
+    <app-call-controls
+      [muted]="call.muted"
+      [disabled]="controlsDisabled()"
+      (muteToggled)="calls.toggleMute()"
+      (keypadOpened)="showKeypad.set(true)"
+    ></app-call-controls>
+    }
+
+    <!-- End call (+ hide keypad) -->
+    <div class="grid grid-cols-3 gap-x-8 place-items-center w-full max-w-xs">
+      <span></span>
+      <button
+        type="button"
+        (click)="calls.hangUp()"
+        [disabled]="call.status === 'ended'"
+        class="bg-red-600 hover:bg-red-500 disabled:opacity-50 transition text-white rounded-full w-[4.5rem] h-[4.5rem] flex items-center justify-center cursor-pointer"
+        aria-label="End call"
+      >
+        <mat-icon fontIcon="call_end" class="icon-lg"></mat-icon>
+      </button>
+      @if (showKeypad()) {
+      <button type="button" class="text-white/90 hover:text-white cursor-pointer" (click)="showKeypad.set(false)">
+        Hide
+      </button>
+      }
+    </div>
+    }
+  }
 </main>
 }

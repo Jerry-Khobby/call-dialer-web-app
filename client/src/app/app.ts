@@ -45,10 +45,14 @@ export class App {
       const loggedIn = auth.isLoggedIn();
       untracked(() => {
         if (!loggedIn) {
+          this.calls.disconnect();
           contacts.reset();
           recents.reset();
           return;
         }
+        // The calls socket lets other users ring this browser while the app is open.
+        const token = auth.token();
+        if (token) this.calls.connect(token);
         // If the token was rejected, the interceptor already logged out and said why.
         const failed = (what: string) => () => {
           if (auth.isLoggedIn()) notifications.showNotification(`Couldn't load your ${what}.`, 'error');
