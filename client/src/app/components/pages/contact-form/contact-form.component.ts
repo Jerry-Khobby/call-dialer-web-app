@@ -24,6 +24,7 @@ export class ContactFormComponent {
 
   editingId = inject(ActivatedRoute).snapshot.paramMap.get('id');
   #prefillPhone = inject(ActivatedRoute).snapshot.queryParamMap.get('phone');
+  #prefillName = inject(ActivatedRoute).snapshot.queryParamMap.get('name');
 
   firstName = signal('');
   lastName = signal('');
@@ -55,6 +56,12 @@ export class ContactFormComponent {
   constructor() {
     // "Add Number" from the keypad pre-fills (or replaces) the phone number.
     if (this.#prefillPhone) this.phone.set(this.#prefillPhone);
+    // From Recents: a caller's Dialer name, e.g. "Kofi Boateng" -> Kofi / Boateng.
+    if (this.#prefillName && !this.editingId) {
+      const [first, ...rest] = this.#prefillName.trim().split(/\s+/);
+      this.firstName.set(first ?? '');
+      this.lastName.set(rest.join(' '));
+    }
     if (this.editingId) void this.#loadContact(this.editingId);
   }
 

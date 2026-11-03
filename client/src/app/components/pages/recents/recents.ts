@@ -106,7 +106,10 @@ export class RecentsPage {
     if (group.contact) {
       this.#router.navigate(['/contacts', group.contact.id]);
     } else {
-      this.#router.navigate(['/contacts/new'], { queryParams: { phone: group.phoneNumber } });
+      // A Dialer caller who isn't a contact yet: start the new contact with their name too.
+      this.#router.navigate(['/contacts/new'], {
+        queryParams: { phone: group.phoneNumber, name: group.contactName },
+      });
     }
   }
 
