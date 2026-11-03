@@ -17,6 +17,7 @@ export class RecentsService {
   /** Newest first. */
   #calls = signal<CallRecord[]>([]);
   #loaded = signal(false);
+  #loading?: Promise<void>;
 
   calls = this.#calls.asReadonly();
   loaded = this.#loaded.asReadonly();
@@ -25,19 +26,26 @@ export class RecentsService {
   lastDialed = computed(() => this.#calls().find((c) => c.callType === 'outgoing')?.phoneNumber ?? '');
 
   /** Fetches the history; called after login, and after each call (the server records those). */
-  async load(): Promise<void> {
-    this.#calls.set(
-      await firstValueFrom(
-        this.#http.get<CallRecord[]>(`${API}/calls`, { params: { limit: HISTORY_LIMIT } }),
-      ),
-    );
-    this.#loaded.set(true);
+  load(): Promise<void> {
+    this.#loading = firstValueFrom(
+      this.#http.get<CallRecord[]>(`${API}/calls`, { params: { limit: HISTORY_LIMIT } }),
+    ).then((calls) => {
+      this.#calls.set(calls);
+      this.#loaded.set(true);
+    });
+    return this.#loading;
+  }
+
+  /** Resolves once the history has loaded (loading it if nothing has yet). */
+  ready(): Promise<void> {
+    return this.#loading ?? this.load();
   }
 
   /** Forgets everything, so the next account to log in never sees this history. */
   reset(): void {
     this.#calls.set([]);
     this.#loaded.set(false);
+    this.#loading = undefined;
   }
 
   /** Records a call the server didn't see, e.g. one handed to the phone's own dialer. */

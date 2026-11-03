@@ -71,13 +71,15 @@ export class KeypadPage {
     this.#router.navigate(['/contacts'], { queryParams: { addNumber: this.typedNumber() } });
   }
 
-  callThisNumber() {
+  async callThisNumber() {
     const number = this.typedNumber();
 
-    // Pressing call with nothing typed brings back the last dialed number.
+    // Pressing call with nothing typed brings back the last dialed number. Right after the
+    // app opens the history may still be loading, so wait for it instead of doing nothing.
     if (!number) {
+      await this.#recents.ready().catch(() => undefined);
       const last = this.#recents.lastDialed();
-      if (last) this.typedNumber.set(last);
+      if (last && !this.typedNumber()) this.typedNumber.set(last);
       return;
     }
 
