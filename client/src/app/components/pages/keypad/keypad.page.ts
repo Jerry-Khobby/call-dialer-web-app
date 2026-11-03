@@ -5,7 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { LongPressDirective } from '../../atoms/long-press.directive';
 import { ContactService } from '../../../core/services/contacts/contact.service';
-import { fullName } from '../../../core/services/contacts/contact.model';
+import { fullName, initials } from '../../../core/services/contacts/contact.model';
+import { AvatarComponent } from '../../atoms/avatar/avatar.component';
 import { RecentsService } from '../../../core/services/calls/recents.service';
 import { CallService } from '../../../core/services/calls/call.service';
 import { NotificationService } from '../../../core/services/notification/notification.service';
@@ -16,7 +17,7 @@ const MAX_LENGTH = 20;
 @Component({
   selector: 'app-keypad-page',
   standalone: true,
-  imports: [MatIconModule, RouterLink, KeypadComponent, TabBar, LongPressDirective],
+  imports: [MatIconModule, RouterLink, KeypadComponent, TabBar, LongPressDirective, AvatarComponent],
   templateUrl: './keypad.page.html',
   styleUrl:'./keypad.page.css'
 })
@@ -41,6 +42,7 @@ export class KeypadPage {
   );
 
   fullName = fullName;
+  initials = initials;
 
   addDigit(key: string) {
     const current = this.typedNumber();
