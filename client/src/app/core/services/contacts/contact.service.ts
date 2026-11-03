@@ -1,31 +1,19 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { API } from '../../api/api';
 import { Contact, ContactInput, fullName } from './contact.model';
 import { samePhone } from '../../utils/phone';
-import { loadJson, saveJson } from '../../utils/storage';
 
-const STORAGE_KEY = 'dialer.contacts';
-
-// Demo data shown on first run, until the contacts API is wired up.
-const SEED_CONTACTS: Contact[] = [
-  { id: 'seed-alice', firstName: 'Alice', lastName: 'Johnson', phoneNumber: '0241234567', favorite: true },
-  { id: 'seed-ben', firstName: 'Ben', lastName: 'Adams', phoneNumber: '0205559870', favorite: false },
-  { id: 'seed-chris', firstName: 'Chris', lastName: 'Smith', phoneNumber: '0277778888', favorite: false },
-  { id: 'seed-daniel', firstName: 'Daniel', lastName: 'White', phoneNumber: '0559993333', favorite: true },
-];
-
-function clean(input: ContactInput): ContactInput {
-  return {
-    firstName: input.firstName.trim(),
-    lastName: input.lastName.trim(),
-    phoneNumber: input.phoneNumber.trim(),
-  };
-}
-
+/** The signed-in user's contacts, kept in a signal and saved through the API. */
 @Injectable({
   providedIn: 'root',
 })
 export class ContactService {
-  #contacts = signal<Contact[]>(loadJson(STORAGE_KEY, SEED_CONTACTS));
+  #http = inject(HttpClient);
+  #contacts = signal<Contact[]>([]);
+  #loaded = signal(false);
+  #loading?: Promise<void>;
 
   /** All contacts in alphabetical order, the way a phone's contact list shows them. */
   contacts = computed(() =>
@@ -36,8 +24,28 @@ export class ContactService {
 
   favorites = computed(() => this.contacts().filter((c) => c.favorite));
 
-  constructor() {
-    effect(() => saveJson(STORAGE_KEY, this.#contacts()));
+  /** False until the first load finishes, so pages don't flash "No Contacts". */
+  loaded = this.#loaded.asReadonly();
+
+  /** Fetches the list from the server; called when someone logs in. */
+  load(): Promise<void> {
+    this.#loading = firstValueFrom(this.#http.get<Contact[]>(`${API}/contacts`)).then((list) => {
+      this.#contacts.set(list);
+      this.#loaded.set(true);
+    });
+    return this.#loading;
+  }
+
+  /** Resolves once the list is loaded (loading it if nothing has yet). */
+  ready(): Promise<void> {
+    return this.#loading ?? this.load();
+  }
+
+  /** Forgets everything, so the next account to log in never sees these contacts. */
+  reset(): void {
+    this.#contacts.set([]);
+    this.#loaded.set(false);
+    this.#loading = undefined;
   }
 
   getById(id: string): Contact | undefined {
@@ -48,23 +56,40 @@ export class ContactService {
     return this.#contacts().find((c) => samePhone(c.phoneNumber, phoneNumber));
   }
 
-  add(input: ContactInput): Contact {
-    const contact: Contact = { ...clean(input), id: crypto.randomUUID(), favorite: false };
+  async add(input: ContactInput): Promise<Contact> {
+    const contact = await firstValueFrom(this.#http.post<Contact>(`${API}/contacts`, input));
     this.#contacts.update((list) => [...list, contact]);
     return contact;
   }
 
-  update(id: string, input: ContactInput): void {
-    this.#contacts.update((list) => list.map((c) => (c.id === id ? { ...c, ...clean(input) } : c)));
+  async update(id: string, input: ContactInput): Promise<void> {
+    const contact = await firstValueFrom(
+      this.#http.patch<Contact>(`${API}/contacts/${id}`, input),
+    );
+    this.#replace(contact);
   }
 
-  remove(id: string): void {
+  async remove(id: string): Promise<void> {
+    await firstValueFrom(this.#http.delete<void>(`${API}/contacts/${id}`));
     this.#contacts.update((list) => list.filter((c) => c.id !== id));
   }
 
-  toggleFavorite(id: string): void {
-    this.#contacts.update((list) =>
-      list.map((c) => (c.id === id ? { ...c, favorite: !c.favorite } : c)),
-    );
+  /** Stars or un-stars at once, and puts it back if the server refuses. */
+  async toggleFavorite(id: string): Promise<void> {
+    const contact = this.getById(id);
+    if (!contact) return;
+
+    const favorite = !contact.favorite;
+    this.#replace({ ...contact, favorite });
+    try {
+      await firstValueFrom(this.#http.patch<Contact>(`${API}/contacts/${id}`, { favorite }));
+    } catch (error) {
+      this.#replace(contact);
+      throw error;
+    }
+  }
+
+  #replace(contact: Contact): void {
+    this.#contacts.update((list) => list.map((c) => (c.id === contact.id ? contact : c)));
   }
 }

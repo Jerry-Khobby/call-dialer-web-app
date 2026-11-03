@@ -42,6 +42,8 @@ export class ContactsPage {
   me = inject(AuthService).user;
   myInitials = computed(() => nameInitials(this.me()?.fullName ?? ''));
 
+  loaded = this.#contactService.loaded;
+
   totalContacts = computed(() => this.#contactService.contacts().length);
 
   filteredContacts = computed(() => {

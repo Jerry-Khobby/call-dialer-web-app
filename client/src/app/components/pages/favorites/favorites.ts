@@ -15,7 +15,9 @@ import { CallService } from '../../../core/services/calls/call.service';
 })
 export class FavoritesPage {
   #calls = inject(CallService);
-  favorites = inject(ContactService).favorites;
+  #contactService = inject(ContactService);
+  favorites = this.#contactService.favorites;
+  loaded = this.#contactService.loaded;
   fullName = fullName;
 
   call(contact: Contact) {

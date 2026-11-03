@@ -21,14 +21,14 @@
           <mat-icon fontIcon="info_outline"></mat-icon>
         </a>
       </li>
-      } @empty {
+      } @empty { @if (loaded()) {
       <li class="flex flex-col items-center text-center gap-3 py-16 text-gray-400">
         <mat-icon fontIcon="star_border" class="icon-xl opacity-60"></mat-icon>
         <p class="text-lg text-white">No Favorites</p>
         <p class="text-sm">Open a contact and tap the star to add it here.</p>
         <a routerLink="/contacts" class="text-blue-400 hover:text-blue-300">Go to Contacts</a>
       </li>
-      }
+      } }
     </ul>
   </div>
 </main>

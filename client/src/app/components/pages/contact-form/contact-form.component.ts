@@ -6,6 +6,7 @@ import { NotificationService } from '../../../core/services/notification/notific
 import { ContactService } from '../../../core/services/contacts/contact.service';
 import { fullName, initials } from '../../../core/services/contacts/contact.model';
 import { isValidPhone } from '../../../core/utils/phone';
+import { apiErrorMessage } from '../../../core/api/api';
 import { AvatarComponent } from '../../atoms/avatar/avatar.component';
 
 /** Create (/contacts/new?phone=...) or edit (/contacts/:id/edit?phone=...) a contact. */
@@ -29,6 +30,7 @@ export class ContactFormComponent {
   phone = signal('');
   submitted = signal(false);
   confirmingDelete = signal(false);
+  busy = signal(false);
 
   fullName = fullName;
   initials = initials;
@@ -51,18 +53,22 @@ export class ContactFormComponent {
   canSave = computed(() => !this.firstNameError() && !this.phoneError() && !this.duplicate());
 
   constructor() {
-    if (this.editingId) {
-      const contact = this.#contactService.getById(this.editingId);
-      if (!contact) {
-        this.#router.navigate(['/contacts']);
-        return;
-      }
-      this.firstName.set(contact.firstName);
-      this.lastName.set(contact.lastName);
-      this.phone.set(contact.phoneNumber);
-    }
     // "Add Number" from the keypad pre-fills (or replaces) the phone number.
     if (this.#prefillPhone) this.phone.set(this.#prefillPhone);
+    if (this.editingId) void this.#loadContact(this.editingId);
+  }
+
+  /** The form may be opened directly, before the contact list has loaded. */
+  async #loadContact(id: string) {
+    await this.#contactService.ready().catch(() => undefined);
+    const contact = this.#contactService.getById(id);
+    if (!contact) {
+      this.#router.navigate(['/contacts']);
+      return;
+    }
+    this.firstName.set(contact.firstName);
+    this.lastName.set(contact.lastName);
+    if (!this.#prefillPhone) this.phone.set(contact.phoneNumber);
   }
 
   cancel() {
@@ -70,26 +76,47 @@ export class ContactFormComponent {
     else this.#router.navigate([this.#prefillPhone ? '/keypad' : '/contacts']);
   }
 
-  done() {
+  async done() {
     this.submitted.set(true);
-    if (!this.canSave()) return;
+    if (!this.canSave() || this.busy()) return;
 
-    const input = { firstName: this.firstName(), lastName: this.lastName(), phoneNumber: this.phone() };
-    if (this.editingId) {
-      this.#contactService.update(this.editingId, input);
-      this.#notificationService.showNotification('Contact updated.', 'success');
-      this.#router.navigate(['/contacts', this.editingId]);
-    } else {
-      const contact = this.#contactService.add(input);
-      this.#notificationService.showNotification('Contact saved.', 'success');
-      this.#router.navigate(['/contacts', contact.id]);
-    }
+    const input = {
+      firstName: this.firstName().trim(),
+      lastName: this.lastName().trim(),
+      phoneNumber: this.phone().trim(),
+    };
+    await this.#save(async () => {
+      if (this.editingId) {
+        await this.#contactService.update(this.editingId, input);
+        this.#notificationService.showNotification('Contact updated.', 'success');
+        this.#router.navigate(['/contacts', this.editingId]);
+      } else {
+        const contact = await this.#contactService.add(input);
+        this.#notificationService.showNotification('Contact saved.', 'success');
+        this.#router.navigate(['/contacts', contact.id]);
+      }
+    });
   }
 
-  deleteContact() {
-    if (!this.editingId) return;
-    this.#contactService.remove(this.editingId);
-    this.#notificationService.showNotification('Contact deleted.', 'info');
-    this.#router.navigate(['/contacts']);
+  async deleteContact() {
+    const id = this.editingId;
+    if (!id || this.busy()) return;
+    await this.#save(async () => {
+      await this.#contactService.remove(id);
+      this.#notificationService.showNotification('Contact deleted.', 'info');
+      this.#router.navigate(['/contacts']);
+    });
+  }
+
+  /** Runs a server request, showing its error (e.g. a duplicate number) if it fails. */
+  async #save(request: () => Promise<void>) {
+    this.busy.set(true);
+    try {
+      await request();
+    } catch (error) {
+      this.#notificationService.showNotification(apiErrorMessage(error), 'error');
+    } finally {
+      this.busy.set(false);
+    }
   }
 }

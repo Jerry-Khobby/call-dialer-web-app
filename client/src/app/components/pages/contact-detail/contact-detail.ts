@@ -10,6 +10,8 @@ import { CallService } from '../../../core/services/calls/call.service';
 import { CallType } from '../../../core/services/calls/call.model';
 import { formatPhone, samePhone } from '../../../core/utils/phone';
 import { formatCallTime, formatDuration } from '../../../core/utils/time';
+import { NotificationService } from '../../../core/services/notification/notification.service';
+import { apiErrorMessage } from '../../../core/api/api';
 
 @Component({
   selector: 'app-contact-detail-page',
@@ -21,6 +23,7 @@ export class ContactDetailPage {
   #contactService = inject(ContactService);
   #recents = inject(RecentsService);
   #calls = inject(CallService);
+  #notifications = inject(NotificationService);
   #id = inject(ActivatedRoute).snapshot.paramMap.get('id') ?? '';
 
   contact = computed(() => this.#contactService.getById(this.#id));
@@ -54,7 +57,14 @@ export class ContactDetailPage {
     if (contact) this.#calls.dial(contact.phoneNumber);
   }
 
+  /** The list may still be loading when the page is opened directly. */
+  loaded = this.#contactService.loaded;
+
   toggleFavorite() {
-    this.#contactService.toggleFavorite(this.#id);
+    this.#contactService
+      .toggleFavorite(this.#id)
+      .catch((error: unknown) =>
+        this.#notifications.showNotification(apiErrorMessage(error), 'error'),
+      );
   }
 }

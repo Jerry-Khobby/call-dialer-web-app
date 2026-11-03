@@ -1,4 +1,4 @@
-// Mirrors the server's Contact schema (minus userId), plus the client-side favorite flag.
+// Mirrors the API's Contact (server/src/modules/contacts).
 export type Contact = {
   id: string;
   firstName: string;
