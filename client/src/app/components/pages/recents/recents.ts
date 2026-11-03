@@ -11,7 +11,7 @@ import { Contact, fullName } from '../../../core/services/contacts/contact.model
 import { formatPhone, samePhone } from '../../../core/utils/phone';
 import { NotificationService } from '../../../core/services/notification/notification.service';
 import { apiErrorMessage } from '../../../core/api/api';
-import { formatCallTime, isSameDay } from '../../../core/utils/time';
+import { dayLabel, formatCallTime, isSameDay } from '../../../core/utils/time';
 
 type RecentGroup = {
   ids: string[];
@@ -77,6 +77,18 @@ export class RecentsPage {
       }
     }
     return groups;
+  });
+
+  /** The groups under "Today", "Yesterday" and "Earlier" headings (groups are newest first). */
+  daySections = computed(() => {
+    const sections: { label: string; groups: RecentGroup[] }[] = [];
+    for (const group of this.groups()) {
+      const label = dayLabel(group.calledAt);
+      const last = sections.at(-1);
+      if (last?.label === label) last.groups.push(group);
+      else sections.push({ label, groups: [group] });
+    }
+    return sections;
   });
 
   hasCalls = computed(() => this.#recents.calls().length > 0);

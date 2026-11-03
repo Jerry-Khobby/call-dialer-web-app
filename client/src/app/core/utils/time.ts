@@ -24,3 +24,11 @@ export function formatDuration(totalSeconds: number): string {
   const s = String(totalSeconds % 60).padStart(2, '0');
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
 }
+
+/** Section heading for Recents: "Today", "Yesterday" or "Earlier". */
+export function dayLabel(date: Date, now = new Date()): string {
+  const days = Math.round((startOfDay(now) - startOfDay(date)) / DAY_MS);
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return 'Earlier';
+}

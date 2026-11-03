@@ -1,59 +1,60 @@
-<main class="min-h-screen bg-[#0f0f11] text-white flex flex-col items-center pb-32">
-  <div class="w-full max-w-sm px-4 flex flex-col gap-4 pt-16">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      @if (editing() && hasCalls()) {
-      <button type="button" class="text-blue-400 hover:text-blue-300 w-14 text-left cursor-pointer" (click)="confirmingClear.set(true)">
-        Clear
-      </button>
-      } @else {
-      <span class="w-14"></span>
-      }
+<main class="screen">
+  <!-- Toolbar -->
+  <div class="flex h-11 items-center justify-between">
+    @if (editing() && hasCalls()) {
+    <button type="button" class="flex h-11 w-16 items-center text-base font-semibold text-danger-fg cursor-pointer" (click)="confirmingClear.set(true)">
+      Clear
+    </button>
+    } @else {
+    <span class="w-16"></span>
+    }
 
-      <!-- All / Missed -->
-      <div class="flex rounded-lg bg-white/10 p-0.5 text-sm" role="tablist" aria-label="Filter calls">
-        <button
-          type="button"
-          role="tab"
-          class="px-4 py-1 rounded-md transition cursor-pointer"
-          [ngClass]="{ 'bg-white/20': filter() === 'all' }"
-          [attr.aria-selected]="filter() === 'all'"
-          (click)="filter.set('all')"
-        >
-          All
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="px-4 py-1 rounded-md transition cursor-pointer"
-          [ngClass]="{ 'bg-white/20': filter() === 'missed' }"
-          [attr.aria-selected]="filter() === 'missed'"
-          (click)="filter.set('missed')"
-        >
-          Missed
-        </button>
-      </div>
-
+    <!-- All / Missed -->
+    <div class="grid w-44 grid-cols-2 rounded-xl bg-chip p-[3px]" role="tablist" aria-label="Filter calls">
       <button
         type="button"
-        class="text-blue-400 hover:text-blue-300 w-14 text-right cursor-pointer disabled:opacity-40"
-        [disabled]="!hasCalls()"
-        (click)="toggleEditing()"
+        role="tab"
+        class="h-[34px] rounded-[9px] text-sm font-semibold transition cursor-pointer"
+        [ngClass]="filter() === 'all' ? 'bg-selected text-fg shadow-sm' : 'text-muted hover:text-fg'"
+        [attr.aria-selected]="filter() === 'all'"
+        (click)="filter.set('all')"
       >
-        {{ editing() ? 'Done' : 'Edit' }}
+        All
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="h-[34px] rounded-[9px] text-sm font-semibold transition cursor-pointer"
+        [ngClass]="filter() === 'missed' ? 'bg-selected text-fg shadow-sm' : 'text-muted hover:text-fg'"
+        [attr.aria-selected]="filter() === 'missed'"
+        (click)="filter.set('missed')"
+      >
+        Missed
       </button>
     </div>
 
-    <h1 class="text-2xl font-bold">Recents</h1>
+    <button
+      type="button"
+      class="flex h-11 w-16 items-center justify-end text-base font-semibold text-link disabled:opacity-40 cursor-pointer"
+      [disabled]="!hasCalls()"
+      (click)="toggleEditing()"
+    >
+      {{ editing() ? 'Done' : 'Edit' }}
+    </button>
+  </div>
 
-    <!-- Recents List -->
-    <ul class="flex flex-col divide-y divide-white/5 overflow-y-auto max-h-[64vh] custom-scroll">
-      @for (group of groups(); track group.ids[0]) {
-      <li class="flex items-center gap-2 py-1">
+  <h1 class="screen-title mt-3">Recents</h1>
+
+  @for (section of daySections(); track section.label) {
+  <section [attr.aria-label]="section.label">
+    <h2 class="section-label mt-[18px] mb-0.5">{{ section.label }}</h2>
+    <ul>
+      @for (group of section.groups; track group.ids[0]) {
+      <li class="flex items-center gap-2 border-b border-divider">
         @if (editing()) {
         <button
           type="button"
-          class="text-red-500 flex cursor-pointer"
+          class="flex h-11 w-8 items-center justify-center text-danger-fg cursor-pointer"
           [attr.aria-label]="'Delete ' + displayName(group) + ' from recents'"
           (click)="remove(group)"
         >
@@ -63,61 +64,54 @@
 
         <button
           type="button"
-          class="flex-1 min-w-0 flex items-center gap-3 text-left px-2 py-2 rounded-lg hover:bg-white/5 transition cursor-pointer"
+          class="flex min-w-0 flex-1 items-center gap-3 py-2.5 text-left cursor-pointer"
           [attr.aria-label]="'Call ' + displayName(group)"
           (click)="callBack(group)"
         >
-          <mat-icon
-            [fontIcon]="callIcons[group.callType]"
-            class="icon-sm shrink-0"
-            [class.text-red-500]="group.callType === 'missed'"
-            [class.text-gray-500]="group.callType !== 'missed'"
-            [attr.aria-label]="group.callType"
-          ></mat-icon>
-          <span class="flex flex-col min-w-0">
-            <span class="font-medium truncate" [class.text-red-500]="group.callType === 'missed'">
-              {{ displayName(group) }}
-              @if (group.ids.length > 1) {
-              <span class="text-gray-400 text-sm">({{ group.ids.length }})</span>
-              }
+          <span
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+            [ngClass]="group.callType === 'missed' ? 'bg-danger-soft text-danger-fg' : 'bg-chip text-muted'"
+          >
+            <mat-icon [fontIcon]="callIcons[group.callType]" class="icon-sm" [attr.aria-label]="group.callType"></mat-icon>
+          </span>
+          <span class="flex min-w-0 flex-col">
+            <span class="truncate text-base font-semibold" [class.text-danger-fg]="group.callType === 'missed'">
+              {{ displayName(group) }}@if (group.ids.length > 1) { ({{ group.ids.length }}) }
             </span>
-            <span class="text-sm text-gray-400">{{ subtitle(group) }}</span>
+            <span class="text-[13px] text-muted">{{ subtitle(group) }}</span>
           </span>
         </button>
 
-        <span class="text-gray-500 text-sm shrink-0">{{ callTime(group) }}</span>
+        <span class="shrink-0 text-[13px] text-muted">{{ callTime(group) }}</span>
         <button
           type="button"
-          class="text-blue-400 hover:text-blue-300 flex p-1 cursor-pointer"
+          class="-mr-2 flex h-11 w-10 items-center justify-center text-link cursor-pointer"
           [attr.aria-label]="'Details for ' + displayName(group)"
           (click)="showInfo(group)"
         >
-          <mat-icon fontIcon="info_outline"></mat-icon>
+          <mat-icon fontIcon="info_outline" class="icon-md"></mat-icon>
         </button>
       </li>
-      } @empty { @if (loaded()) {
-      <li class="flex flex-col items-center text-center gap-3 py-16 text-gray-400">
-        <mat-icon [fontIcon]="filter() === 'missed' ? 'call_missed' : 'history'" class="icon-xl opacity-60"></mat-icon>
-        <p class="text-lg text-white">{{ filter() === 'missed' ? 'No Missed Calls' : 'No Recents' }}</p>
-      </li>
-      } }
+      }
     </ul>
+  </section>
+  } @empty { @if (loaded()) {
+  <div class="flex flex-col items-center gap-3 py-20 text-center">
+    <span class="flex h-16 w-16 items-center justify-center rounded-full bg-chip text-subtle">
+      <mat-icon [fontIcon]="filter() === 'missed' ? 'call_missed' : 'history'" class="icon-lg"></mat-icon>
+    </span>
+    <p class="font-display text-xl font-bold">{{ filter() === 'missed' ? 'No Missed Calls' : 'No Recents' }}</p>
+    <p class="text-sm text-muted">{{ filter() === 'missed' ? "You haven't missed anything." : 'Calls you make and receive show up here.' }}</p>
   </div>
+  } }
 </main>
 
 <!-- Clear confirmation sheet -->
 @if (confirmingClear()) {
-<div
-  class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center p-3"
-  (click)="confirmingClear.set(false)"
->
-  <div class="w-full max-w-sm flex flex-col gap-2 animate-sheet" role="dialog" aria-label="Clear recents" (click)="$event.stopPropagation()">
-    <button type="button" class="sheet-btn sheet-btn-danger rounded-2xl bg-[#1c1c1f]" (click)="clearAll()">
-      Clear All Recents
-    </button>
-    <button type="button" class="sheet-btn rounded-2xl bg-[#1c1c1f] font-semibold" (click)="confirmingClear.set(false)">
-      Cancel
-    </button>
+<div class="fixed inset-0 z-50 flex items-end justify-center bg-scrim p-3 backdrop-blur-sm" (click)="confirmingClear.set(false)">
+  <div class="flex w-full max-w-sm flex-col gap-2 animate-sheet" role="dialog" aria-label="Clear recents" (click)="$event.stopPropagation()">
+    <button type="button" class="sheet-btn sheet-btn-danger rounded-2xl bg-sheet" (click)="clearAll()">Clear All Recents</button>
+    <button type="button" class="sheet-btn rounded-2xl bg-sheet font-semibold" (click)="confirmingClear.set(false)">Cancel</button>
   </div>
 </div>
 }
