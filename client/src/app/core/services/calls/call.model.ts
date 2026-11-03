@@ -1,5 +1,5 @@
-// Mirrors the server's Call schema (minus userId). The contact name is looked up
-// from ContactService when displayed, so renaming a contact updates its history.
+// Mirrors the API's Call (server/src/modules/calls). The name shown comes from the user's
+// contacts when the number is saved there, so renaming a contact updates its history.
 export type CallType = 'outgoing' | 'incoming' | 'missed';
 
 export type CallRecord = {
@@ -8,6 +8,8 @@ export type CallRecord = {
   callType: CallType;
   duration: number; // seconds
   calledAt: string; // ISO date
+  /** For in-app calls: the other person's account name, shown like caller ID. */
+  contactName?: string;
 };
 
 export type CallStatus = 'dialing' | 'ringing' | 'connected' | 'ended';

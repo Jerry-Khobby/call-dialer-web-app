@@ -1,49 +1,74 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { API } from '../../api/api';
 import { CallRecord } from './call.model';
-import { loadJson, saveJson } from '../../utils/storage';
 
-const STORAGE_KEY = 'dialer.recents';
+/** How much history Recents shows (the server's maximum per request). */
+const HISTORY_LIMIT = 500;
 
-function hoursAgo(hours: number): string {
-  return new Date(Date.now() - hours * 3_600_000).toISOString();
-}
-
-// Demo history shown on first run, until the calls API is wired up.
-const SEED_CALLS: CallRecord[] = [
-  { id: 'seed-1', phoneNumber: '0241234567', callType: 'missed', duration: 0, calledAt: hoursAgo(0.05) },
-  { id: 'seed-2', phoneNumber: '0205559870', callType: 'incoming', duration: 312, calledAt: hoursAgo(0.2) },
-  { id: 'seed-3', phoneNumber: '0277778888', callType: 'outgoing', duration: 95, calledAt: hoursAgo(1) },
-  { id: 'seed-4', phoneNumber: '0559993333', callType: 'missed', duration: 0, calledAt: hoursAgo(26) },
-  { id: 'seed-5', phoneNumber: '0559993333', callType: 'missed', duration: 0, calledAt: hoursAgo(26.5) },
-  { id: 'seed-6', phoneNumber: '0559993333', callType: 'missed', duration: 0, calledAt: hoursAgo(27) },
-  { id: 'seed-7', phoneNumber: '0302111222', callType: 'outgoing', duration: 41, calledAt: hoursAgo(72) },
-];
-
+/** The signed-in user's call history, from the API. */
 @Injectable({
   providedIn: 'root',
 })
 export class RecentsService {
+  #http = inject(HttpClient);
+
   /** Newest first. */
-  #calls = signal<CallRecord[]>(loadJson(STORAGE_KEY, SEED_CALLS));
+  #calls = signal<CallRecord[]>([]);
+  #loaded = signal(false);
 
   calls = this.#calls.asReadonly();
+  loaded = this.#loaded.asReadonly();
 
   /** Used to redial when the call button is pressed with nothing typed. */
   lastDialed = computed(() => this.#calls().find((c) => c.callType === 'outgoing')?.phoneNumber ?? '');
 
-  constructor() {
-    effect(() => saveJson(STORAGE_KEY, this.#calls()));
+  /** Fetches the history; called after login, and after each call (the server records those). */
+  async load(): Promise<void> {
+    this.#calls.set(
+      await firstValueFrom(
+        this.#http.get<CallRecord[]>(`${API}/calls`, { params: { limit: HISTORY_LIMIT } }),
+      ),
+    );
+    this.#loaded.set(true);
   }
 
-  add(record: Omit<CallRecord, 'id'>): void {
-    this.#calls.update((list) => [{ ...record, id: crypto.randomUUID() }, ...list]);
-  }
-
-  remove(ids: string[]): void {
-    this.#calls.update((list) => list.filter((c) => !ids.includes(c.id)));
-  }
-
-  clear(): void {
+  /** Forgets everything, so the next account to log in never sees this history. */
+  reset(): void {
     this.#calls.set([]);
+    this.#loaded.set(false);
+  }
+
+  /** Records a call the server didn't see, e.g. one handed to the phone's own dialer. */
+  async add(record: Omit<CallRecord, 'id'>): Promise<void> {
+    const saved = await firstValueFrom(this.#http.post<CallRecord>(`${API}/calls`, record));
+    this.#calls.update((list) => [saved, ...list]);
+  }
+
+  /** Deletes a grouped row's calls at once; restores the list if the server refuses. */
+  async remove(ids: string[]): Promise<void> {
+    await this.#optimistic(
+      (list) => list.filter((c) => !ids.includes(c.id)),
+      this.#http.post(`${API}/calls/bulk-delete`, { ids }),
+    );
+  }
+
+  async clear(): Promise<void> {
+    await this.#optimistic(() => [], this.#http.delete(`${API}/calls`));
+  }
+
+  /** Updates the list at once, then reloads it from the server if the request fails. */
+  async #optimistic(
+    change: (list: CallRecord[]) => CallRecord[],
+    request: Parameters<typeof firstValueFrom>[0],
+  ): Promise<void> {
+    this.#calls.update(change);
+    try {
+      await firstValueFrom(request);
+    } catch (error) {
+      await this.load().catch(() => undefined);
+      throw error;
+    }
   }
 }

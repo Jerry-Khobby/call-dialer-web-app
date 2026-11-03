@@ -59,12 +59,14 @@ export class CallService {
     if (!call || call.status === 'ended') return;
 
     this.#stopTimers();
-    this.#recents.add({
-      phoneNumber: call.phoneNumber,
-      callType: 'outgoing',
-      duration: call.connectedAt ? Math.floor((Date.now() - call.connectedAt) / 1000) : 0,
-      calledAt: new Date(call.dialedAt).toISOString(),
-    });
+    this.#recents
+      .add({
+        phoneNumber: call.phoneNumber,
+        callType: 'outgoing',
+        duration: call.connectedAt ? Math.floor((Date.now() - call.connectedAt) / 1000) : 0,
+        calledAt: new Date(call.dialedAt).toISOString(),
+      })
+      .catch(() => undefined); // History is a convenience; the call itself already ended
     this.#patch({ status: 'ended' });
 
     // Leave "Call ended" on screen briefly, like a phone does.

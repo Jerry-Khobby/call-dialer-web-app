@@ -6,6 +6,7 @@ import { NotificationComponent } from './components/atoms/notification.component
 import { CallService } from './core/services/calls/call.service';
 import { AuthService } from './core/services/auth/auth.service';
 import { ContactService } from './core/services/contacts/contact.service';
+import { RecentsService } from './core/services/calls/recents.service';
 import { NotificationService } from './core/services/notification/notification.service';
 
 @Component({
@@ -32,6 +33,7 @@ export class App {
   constructor() {
     const auth = inject(AuthService);
     const contacts = inject(ContactService);
+    const recents = inject(RecentsService);
     const notifications = inject(NotificationService);
 
     // Check the saved session is still valid; a rejected token is logged out by the interceptor.
@@ -44,6 +46,7 @@ export class App {
       untracked(() => {
         if (!loggedIn) {
           contacts.reset();
+          recents.reset();
           return;
         }
         // If the token was rejected, the interceptor already logged out and said why.
@@ -51,6 +54,7 @@ export class App {
           if (auth.isLoggedIn()) notifications.showNotification(`Couldn't load your ${what}.`, 'error');
         };
         contacts.load().catch(failed('contacts'));
+        recents.load().catch(failed('call history'));
       });
     });
   }

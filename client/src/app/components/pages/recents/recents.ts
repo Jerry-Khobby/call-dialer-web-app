@@ -9,6 +9,8 @@ import { CallType } from '../../../core/services/calls/call.model';
 import { ContactService } from '../../../core/services/contacts/contact.service';
 import { Contact, fullName } from '../../../core/services/contacts/contact.model';
 import { formatPhone, samePhone } from '../../../core/utils/phone';
+import { NotificationService } from '../../../core/services/notification/notification.service';
+import { apiErrorMessage } from '../../../core/api/api';
 import { formatCallTime, isSameDay } from '../../../core/utils/time';
 
 type RecentGroup = {
@@ -17,6 +19,7 @@ type RecentGroup = {
   callType: CallType;
   calledAt: Date; // newest call in the group
   contact?: Contact;
+  contactName?: string; // Caller ID for numbers that aren't in contacts
 };
 
 @Component({
@@ -30,6 +33,7 @@ export class RecentsPage {
   #recents = inject(RecentsService);
   #calls = inject(CallService);
   #contacts = inject(ContactService);
+  #notifications = inject(NotificationService);
 
   filter = signal<'all' | 'missed'>('all');
   editing = signal(false);
@@ -68,6 +72,7 @@ export class RecentsPage {
           callType: call.callType,
           calledAt,
           contact: this.#contacts.findByPhone(call.phoneNumber),
+          contactName: call.contactName,
         });
       }
     }
@@ -75,9 +80,18 @@ export class RecentsPage {
   });
 
   hasCalls = computed(() => this.#recents.calls().length > 0);
+  loaded = this.#recents.loaded;
 
+  /** A saved contact's name, else the caller's Dialer name, else the number. */
   displayName(group: RecentGroup) {
-    return group.contact ? fullName(group.contact) : formatPhone(group.phoneNumber);
+    if (group.contact) return fullName(group.contact);
+    return group.contactName ?? formatPhone(group.phoneNumber);
+  }
+
+  /** Under the name: "mobile" for contacts, the number for other Dialer users, else "unknown". */
+  subtitle(group: RecentGroup) {
+    if (group.contact) return 'mobile';
+    return group.contactName ? formatPhone(group.phoneNumber) : 'unknown';
   }
 
   callTime(group: RecentGroup) {
@@ -97,7 +111,7 @@ export class RecentsPage {
   }
 
   remove(group: RecentGroup) {
-    this.#recents.remove(group.ids);
+    this.#recents.remove(group.ids).catch((error: unknown) => this.#showError(error));
   }
 
   toggleEditing() {
@@ -106,8 +120,12 @@ export class RecentsPage {
   }
 
   clearAll() {
-    this.#recents.clear();
+    this.#recents.clear().catch((error: unknown) => this.#showError(error));
     this.confirmingClear.set(false);
     this.editing.set(false);
+  }
+
+  #showError(error: unknown) {
+    this.#notifications.showNotification(apiErrorMessage(error), 'error');
   }
 }

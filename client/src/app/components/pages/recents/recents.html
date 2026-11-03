@@ -81,7 +81,7 @@
               <span class="text-gray-400 text-sm">({{ group.ids.length }})</span>
               }
             </span>
-            <span class="text-sm text-gray-400">{{ group.contact ? 'mobile' : 'unknown' }}</span>
+            <span class="text-sm text-gray-400">{{ subtitle(group) }}</span>
           </span>
         </button>
 
@@ -95,12 +95,12 @@
           <mat-icon fontIcon="info_outline"></mat-icon>
         </button>
       </li>
-      } @empty {
+      } @empty { @if (loaded()) {
       <li class="flex flex-col items-center text-center gap-3 py-16 text-gray-400">
         <mat-icon [fontIcon]="filter() === 'missed' ? 'call_missed' : 'history'" class="icon-xl opacity-60"></mat-icon>
         <p class="text-lg text-white">{{ filter() === 'missed' ? 'No Missed Calls' : 'No Recents' }}</p>
       </li>
-      }
+      } }
     </ul>
   </div>
 </main>
