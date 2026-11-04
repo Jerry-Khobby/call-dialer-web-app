@@ -3,14 +3,13 @@ import { Component,inject } from "@angular/core";
 
 import { NotificationService } from "../../core/services/notification/notification.service";
 import { NotificationSeverity } from "../../core/services/notification/notification.model";
-import { NgClass } from "@angular/common";
 import { MatIconModule } from "@angular/material/icon";
 
 @Component({
   selector:'app-notification',
   templateUrl:'./notification.component.html',
   styleUrls:['./notification.component.css'],
-  imports:[NgClass, MatIconModule],
+  imports:[MatIconModule],
 })
 
 export class NotificationComponent{

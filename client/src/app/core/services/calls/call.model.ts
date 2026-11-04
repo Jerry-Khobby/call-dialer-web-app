@@ -42,7 +42,15 @@ export type CallAck =
   | { ok: true; callId?: string }
   | {
       ok: false;
-      reason: 'invalid' | 'not-registered' | 'self' | 'offline' | 'busy' | 'in-call' | 'unknown-call';
+      reason:
+        | 'invalid'
+        | 'not-registered'
+        | 'self'
+        | 'offline'
+        | 'busy'
+        | 'in-call'
+        | 'unknown-call'
+        | 'rate-limited';
     };
 
 export type IncomingCall = {

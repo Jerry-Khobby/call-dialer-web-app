@@ -26,6 +26,7 @@ const UNREACHABLE: Record<Unreachable, string> = {
   'in-call': "You're already in a call",
   invalid: "Couldn't place the call",
   'unknown-call': 'The call has already ended',
+  'rate-limited': 'Too many calls in a minute. Try again shortly.',
 };
 
 const ENDED: Record<EndReason, string> = {
