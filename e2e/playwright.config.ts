@@ -1,14 +1,13 @@
 import { defineConfig } from '@playwright/test';
 
 /**
- * End-to-end tests for the whole app: the production build of the Angular client (served
- * with /api forwarded, as a host would), the NestJS API and a throwaway in-memory MongoDB,
- * started on their own ports so they never touch a dev server or database you are using.
+ * End-to-end tests for the whole app as it is deployed: the NestJS server serving the
+ * production build of the Angular client and the API on one port, with a throwaway
+ * in-memory MongoDB, so they never touch a dev server or database you are using.
  *
  * To test an app that is already running instead, set E2E_BASE_URL (e.g. http://localhost:4200).
  */
-const API_PORT = 3399;
-const WEB_PORT = 4399;
+const APP_PORT = 3399;
 const externalApp = process.env.E2E_BASE_URL;
 
 export default defineConfig({
@@ -21,7 +20,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: externalApp ?? `http://localhost:${WEB_PORT}`,
+    baseURL: externalApp ?? `http://localhost:${APP_PORT}`,
     // The Chrome you have installed; set E2E_BROWSER_CHANNEL= (empty) to use Playwright's Chromium.
     channel: process.env.E2E_BROWSER_CHANNEL ?? 'chrome',
     viewport: { width: 390, height: 844 },
@@ -39,21 +38,11 @@ export default defineConfig({
   },
   webServer: externalApp
     ? undefined
-    : [
-        {
-          command: 'node scripts/start-api.mjs',
-          url: `http://localhost:${API_PORT}/api/health`,
-          env: { API_PORT: String(API_PORT), CLIENT_ORIGIN: `http://localhost:${WEB_PORT}` },
-          timeout: 240_000,
-          reuseExistingServer: false,
-        },
-        {
-          // The production build, served like a static host would serve it.
-          command: 'node scripts/serve-client.mjs',
-          url: `http://localhost:${WEB_PORT}`,
-          env: { WEB_PORT: String(WEB_PORT), API_URL: `http://localhost:${API_PORT}` },
-          timeout: 240_000,
-          reuseExistingServer: false,
-        },
-      ],
+    : {
+        command: 'node scripts/start-app.mjs',
+        url: `http://localhost:${APP_PORT}/api/health`,
+        env: { APP_PORT: String(APP_PORT) },
+        timeout: 300_000,
+        reuseExistingServer: false,
+      },
 });
