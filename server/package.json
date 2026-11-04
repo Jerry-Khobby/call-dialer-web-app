@@ -4,6 +4,9 @@
   "description": "",
   "author": "",
   "private": true,
+  "engines": {
+    "node": ">=20.19"
+  },
   "license": "UNLICENSED",
   "scripts": {
     "db": "node scripts/dev-db.mjs",
@@ -21,13 +24,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.1",
+    "@nestjs/common": "^11.2.8",
     "@nestjs/config": "^4.0.2",
-    "@nestjs/core": "^11.0.1",
+    "@nestjs/core": "^11.2.8",
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/mongoose": "^11.0.3",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-express": "^11.2.8",
     "@nestjs/platform-socket.io": "^11.2.8",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/websockets": "^11.2.8",
@@ -88,5 +91,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "multer": "^2.5.0"
   }
 }
