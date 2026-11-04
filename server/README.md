@@ -26,10 +26,11 @@ The server checks these at startup and lists every missing or invalid one.
 | Variable | Required | Default | |
 | --- | --- | --- | --- |
 | `MONGODB_URI` | yes | none | e.g. `mongodb://localhost:27017/call-dialer` |
-| `JWT_SECRET` | yes | none | At least 32 characters. Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
+| `JWT_SECRET` | yes | none | At least 32 characters, and not the example value (the server refuses to start with it). Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
 | `JWT_EXPIRES_IN` | no | `7d` | How long a login lasts |
 | `PORT` | no | `3000` | Change it if 3000 is already in use |
 | `CLIENT_ORIGIN` | no | `http://localhost:4200` | Origins allowed to call the API (comma-separated) |
+| `TRUST_PROXY` | no | `false` | Proxies in front of the API: set `1` on hosts such as Render or Railway, so rate limits use each visitor's IP |
 | `TURN_URL`, `TURN_USERNAME`, `TURN_CREDENTIAL` | no | none | Optional TURN relay, e.g. a self-hosted [coturn](https://github.com/coturn/coturn) |
 
 ### Commands
@@ -57,7 +58,7 @@ Text fields are trimmed before they're checked, so `" Ama "` is saved as `"Ama"`
 | `POST /auth/login` | `{ email, password }` | `200 { accessToken, user }`, or `401` |
 | `GET /auth/me` | | `200 user` |
 
-Passwords must be 8–72 characters and are stored as bcrypt hashes. A failed login takes the same time whether or not the email exists, so response times don't reveal who has an account. Register and login are limited to 20 requests per minute per IP address; other routes to 120.
+Passwords must be 8–72 characters and are stored as bcrypt hashes. Each person can start at most 10 calls a minute (the ack reason is `rate-limited`), so a script can't flood someone with missed calls. A failed login takes the same time whether or not the email exists, so response times don't reveal who has an account. Register and login are limited to 20 requests per minute per IP address; other routes to 120.
 
 ### Contacts
 

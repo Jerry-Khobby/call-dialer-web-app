@@ -25,6 +25,12 @@ import type {
 /** How long an unanswered call rings before it counts as missed. */
 export const RING_TIMEOUT_MS = 30_000;
 
+/**
+ * Calls one person may start per minute. Every attempt, answered or not, can leave a
+ * missed call in someone's Recents, so this stops a script from flooding a number.
+ */
+export const CALLS_PER_MINUTE = 10;
+
 type CallSocket = Socket<any, any, any, SocketUser>;
 
 const userRoom = (userId: string) => `user:${userId}`;
@@ -43,9 +49,14 @@ export class CallsGateway implements OnGatewayInit, OnGatewayDisconnect {
 
   private readonly logger = new Logger(CallsGateway.name);
   private readonly sessions = new Map<string, CallSession>();
+  /** When each user started their recent calls, for the per-minute limit. */
+  private readonly callStarts = new Map<string, number[]>();
 
   /** Shortened by the e2e tests. */
   ringTimeoutMs = RING_TIMEOUT_MS;
+
+  /** Raised by the e2e tests, which start many calls a minute. */
+  callsPerMinute = CALLS_PER_MINUTE;
 
   constructor(
     private readonly jwt: JwtService,
@@ -94,6 +105,9 @@ export class CallsGateway implements OnGatewayInit, OnGatewayDisconnect {
     }
     const caller = socket.data;
     if (this.inCall(caller.userId)) return { ok: false, reason: 'in-call' };
+    if (!this.allowCallStart(caller.userId)) {
+      return { ok: false, reason: 'rate-limited' };
+    }
 
     const callee = await this.users.findByPhone(body.to);
     if (!callee) return { ok: false, reason: 'not-registered' };
@@ -238,6 +252,21 @@ export class CallsGateway implements OnGatewayInit, OnGatewayDisconnect {
       (session.caller.userId === userId || session.callee.userId === userId)
       ? session
       : undefined;
+  }
+
+  /** Counts this attempt and says whether the user is still under the per-minute limit. */
+  private allowCallStart(userId: string): boolean {
+    const now = Date.now();
+    const recent = (this.callStarts.get(userId) ?? []).filter(
+      (at) => now - at < 60_000,
+    );
+    if (recent.length >= this.callsPerMinute) {
+      this.callStarts.set(userId, recent);
+      return false;
+    }
+    recent.push(now);
+    this.callStarts.set(userId, recent);
+    return true;
   }
 
   private inCall(userId: string): boolean {

@@ -47,6 +47,8 @@ describe('Call signaling (e2e)', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
+    // These tests start many calls in a few seconds; the limit has its own test.
+    app.get(CallsGateway).callsPerMinute = 1000;
     alice = await registerUser(app, {
       fullName: 'Alice',
       phoneNumber: '0241111111',
@@ -294,6 +296,27 @@ describe('Call signaling (e2e)', () => {
     b.disconnect();
     expect(await ended).toEqual({ callId, reason: 'disconnected' });
     expect((await history(bob))[0]).toMatchObject({ callType: 'incoming' });
+  });
+
+  it('limits how many calls one person can start in a minute', async () => {
+    const gateway = app.get(CallsGateway);
+    gateway.callsPerMinute = 3;
+    try {
+      const dan = await registerUser(app, { fullName: 'Dan' });
+      const d = await connect(dan);
+      for (let i = 0; i < 3; i++) {
+        expect(
+          await send(d, 'call:start', { to: '0209990000', offer: OFFER }),
+        ).toEqual({ ok: false, reason: 'not-registered' });
+      }
+      expect(
+        await send(d, 'call:start', { to: '0241111111', offer: OFFER }),
+      ).toEqual({ ok: false, reason: 'rate-limited' });
+      // The refused attempt didn't leave Alice a missed call.
+      expect(await history(alice)).toEqual([]);
+    } finally {
+      gateway.callsPerMinute = 1000;
+    }
   });
 
   it("ignores messages about calls the user isn't part of", async () => {

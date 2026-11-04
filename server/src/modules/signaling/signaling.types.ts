@@ -34,7 +34,8 @@ export type CallAck =
         | 'offline'
         | 'busy'
         | 'in-call'
-        | 'unknown-call';
+        | 'unknown-call'
+        | 'rate-limited';
     };
 
 export type CallSession = {

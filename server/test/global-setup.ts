@@ -9,4 +9,6 @@ export default async function globalSetup() {
   process.env.MONGODB_URI = mongo.getUri('call-dialer-e2e');
   process.env.JWT_SECRET = 'e2e-secret-that-is-definitely-longer-than-32-chars';
   process.env.CLIENT_ORIGIN = 'http://localhost:4200';
+  // As on a host behind one proxy, so rate limits use X-Forwarded-For (proxy.e2e-spec).
+  process.env.TRUST_PROXY = '1';
 }

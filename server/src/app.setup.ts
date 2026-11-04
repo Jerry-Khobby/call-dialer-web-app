@@ -14,6 +14,12 @@ export function configureApp(app: INestApplication): void {
     .split(',')
     .map((origin) => origin.trim());
 
+  // Behind a host's proxy, take the visitor's IP from X-Forwarded-For (rate limits, logs).
+  const express = app.getHttpAdapter().getInstance() as {
+    set(setting: string, value: unknown): void;
+  };
+  express.set('trust proxy', config.get('TRUST_PROXY', { infer: true }));
+
   app.setGlobalPrefix('api');
   app.use(helmet());
   app.use(compression());
