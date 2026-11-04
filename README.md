@@ -161,6 +161,26 @@ Other commands, run from `client/`:
 
 > **Windows note:** if `ng build` or `ng serve` crashes in Git Bash with `fatal error: all goroutines are asleep - deadlock!`, run it from PowerShell or Command Prompt instead.
 
+## Tests
+
+| What | Where | Run |
+| --- | --- | --- |
+| **Full app, end to end**: the real client and API in Chrome, with real accounts, contacts, Recents and calls | [`e2e/`](e2e/) | `cd e2e && npm install && npm test` |
+| API end to end: every endpoint and the calling protocol, against an in-memory MongoDB | `server/test/` | `cd server && npm run test:e2e` |
+| Unit tests | `server/src`, `client/src` | `npm test` in `server/` or `client/` |
+
+The full-app suite starts its own stack on separate ports: a throwaway in-memory MongoDB, the built API on 3399, and the Angular dev server with its proxy on 4399. It never touches a database or dev server you are using. It drives the Chrome you have installed. Each call test uses two browser sessions with Chrome's fake microphone, and measures with WebRTC's own statistics that audio really flows both ways.
+
+```bash
+cd e2e
+npm install
+npm test               # all tests, about 5 minutes
+npm run test:headed    # watch it in a visible browser
+npm run report         # open the HTML report (screenshots and traces of any failure)
+```
+
+To test an app that is already running instead, set `E2E_BASE_URL`, e.g. `E2E_BASE_URL=http://localhost:4200 npm test`.
+
 ## Project structure
 
 ```text
@@ -193,7 +213,8 @@ server/src/
     ├── contacts/     contacts API
     ├── calls/        call-history API, STUN/TURN server list
     └── signaling/    socket.io gateway that sets up WebRTC calls between users
-server/test/          end-to-end tests against an in-memory MongoDB
+server/test/          API end-to-end tests against an in-memory MongoDB
+e2e/                  full-app tests: client + API + MongoDB, driven in Chrome (Playwright)
 ```
 
 Components follow an atomic-design layout, from small to large: atoms → molecules → organisms → pages. State is held in Angular signals inside the services, and the pages only read from them. The services load the signed-in user's data from the API after login and clear it on logout.
