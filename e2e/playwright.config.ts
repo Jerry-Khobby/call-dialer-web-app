@@ -1,9 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
 /**
- * End-to-end tests for the whole app: the Angular client (through its /api proxy), the
- * NestJS API and a throwaway in-memory MongoDB, started on their own ports so they never
- * touch a dev server or database you are using.
+ * End-to-end tests for the whole app: the production build of the Angular client (served
+ * with /api forwarded, as a host would), the NestJS API and a throwaway in-memory MongoDB,
+ * started on their own ports so they never touch a dev server or database you are using.
  *
  * To test an app that is already running instead, set E2E_BASE_URL (e.g. http://localhost:4200).
  */
@@ -48,9 +48,10 @@ export default defineConfig({
           reuseExistingServer: false,
         },
         {
-          command: `npm --prefix ../client start -- --port ${WEB_PORT}`,
+          // The production build, served like a static host would serve it.
+          command: 'node scripts/serve-client.mjs',
           url: `http://localhost:${WEB_PORT}`,
-          env: { API_URL: `http://localhost:${API_PORT}` },
+          env: { WEB_PORT: String(WEB_PORT), API_URL: `http://localhost:${API_PORT}` },
           timeout: 240_000,
           reuseExistingServer: false,
         },

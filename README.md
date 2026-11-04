@@ -169,7 +169,7 @@ Other commands, run from `client/`:
 | API end to end: every endpoint and the calling protocol, against an in-memory MongoDB | `server/test/` | `cd server && npm run test:e2e` |
 | Unit tests | `server/src`, `client/src` | `npm test` in `server/` or `client/` |
 
-The full-app suite starts its own stack on separate ports: a throwaway in-memory MongoDB, the built API on 3399, and the Angular dev server with its proxy on 4399. It never touches a database or dev server you are using. It drives the Chrome you have installed. Each call test uses two browser sessions with Chrome's fake microphone, and measures with WebRTC's own statistics that audio really flows both ways.
+The full-app suite starts its own stack on separate ports: a throwaway in-memory MongoDB, the built API on 3399, and the **production build** of the client on 4399, served the way a static host serves it (with `/api` and the calls socket forwarded). So the tests check exactly what gets deployed. It never touches a database or dev server you are using. It drives the Chrome you have installed. Each call test uses two browser sessions with Chrome's fake microphone, and measures with WebRTC's own statistics that audio really flows both ways.
 
 ```bash
 cd e2e
