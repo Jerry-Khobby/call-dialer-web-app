@@ -1,0 +1,40 @@
+# Render Blueprint: the whole app as one free web service. The NestJS server serves the
+# Angular build and the API from the same address. The database is a free MongoDB Atlas
+# (M0) cluster; see "Deploy for free" in the README.
+services:
+  - type: web
+    name: dialer
+    runtime: node
+    plan: free
+    # Both builds need their devDependencies (the Angular and Nest CLIs). The MongoDB
+    # download is for the tests only, so it is skipped here.
+    buildCommand: >-
+      cd client && npm ci --include=dev && npm run build &&
+      cd ../server && npm ci --include=dev && npm run build
+    startCommand: cd server && npm run start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: MONGOMS_DISABLE_POSTINSTALL
+        value: "1"
+      # Render's proxy sits in front of the app, so the real visitor IP comes from it.
+      - key: TRUST_PROXY
+        value: "1"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      # Asked for when the Blueprint is created: the Atlas connection string, and the
+      # service's own address (e.g. https://dialer.onrender.com).
+      - key: MONGODB_URI
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
+      # Optional TURN relay for callers behind strict firewalls; leave empty if unused.
+      - key: TURN_URL
+        sync: false
+      - key: TURN_USERNAME
+        sync: false
+      - key: TURN_CREDENTIAL
+        sync: false
