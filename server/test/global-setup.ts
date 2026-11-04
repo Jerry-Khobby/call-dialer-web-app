@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 // One in-memory MongoDB for the whole e2e run. Env vars set here are inherited by the
@@ -11,4 +12,6 @@ export default async function globalSetup() {
   process.env.CLIENT_ORIGIN = 'http://localhost:4200';
   // As on a host behind one proxy, so rate limits use X-Forwarded-For (proxy.e2e-spec).
   process.env.TRUST_PROXY = '1';
+  // A tiny stand-in for the Angular build, served by the API like in production.
+  process.env.CLIENT_DIST = join(__dirname, 'fixtures', 'client');
 }

@@ -4,6 +4,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import { CorsIoAdapter } from './common/cors-io.adapter';
 import { MongooseExceptionFilter } from './common/mongoose-exception.filter';
+import { serveClientApp } from './config/client-app';
 import { Env } from './config/env.validation';
 
 /** Shared by main.ts and the e2e tests so both run the app with the same middleware. */
@@ -21,8 +22,36 @@ export function configureApp(app: INestApplication): void {
   express.set('trust proxy', config.get('TRUST_PROXY', { infer: true }));
 
   app.setGlobalPrefix('api');
-  app.use(helmet());
+  app.use(
+    helmet({
+      // The server also serves the Angular app, so the policy is written for it: its own
+      // scripts only (no inline code), Google Fonts, and API/socket calls to itself.
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          scriptSrcAttr: ["'none'"],
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'",
+            'https://fonts.googleapis.com',
+          ],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+          imgSrc: ["'self'", 'data:'],
+          connectSrc: ["'self'"],
+          manifestSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
+          frameAncestors: ["'none'"],
+          // Hosts serve HTTPS already; upgrading would break http://localhost.
+          upgradeInsecureRequests: null,
+        },
+      },
+    }),
+  );
   app.use(compression());
+  serveClientApp(app);
   app.enableCors({ origin: origins });
   app.useGlobalPipes(
     new ValidationPipe({
