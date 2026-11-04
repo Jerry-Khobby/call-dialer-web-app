@@ -32,6 +32,7 @@ The server checks these at startup and lists every missing or invalid one.
 | `CLIENT_ORIGIN` | no | `http://localhost:4200` | Origins allowed to call the API (comma-separated) |
 | `TRUST_PROXY` | no | `false` | Proxies in front of the API: set `1` on hosts such as Render or Railway, so rate limits use each visitor's IP |
 | `TURN_URL`, `TURN_USERNAME`, `TURN_CREDENTIAL` | no | none | Optional TURN relay, e.g. a self-hosted [coturn](https://github.com/coturn/coturn) |
+| `CLIENT_DIST` | no | `../client/dist/client/browser` | The Angular build to serve. If it has no `index.html` (as in development), only the API is served |
 
 ### Commands
 
@@ -114,8 +115,8 @@ Numbers are matched by their digits, so `024 123 4567` and `0241234567` are the 
 
 ```text
 src/
-├── main.ts, app.setup.ts   startup: /api prefix, helmet, compression, CORS, validation
-├── config/env.validation.ts
+├── main.ts, app.setup.ts   startup: /api prefix, helmet (with the app's CSP), compression, CORS, validation
+├── config/                 env.validation.ts; client-app.ts serves the Angular build
 ├── common/                 phone-number rules (same as the client), MongoDB helpers
 └── modules/
     ├── users/              User schema and lookups (by id, email, phone number)

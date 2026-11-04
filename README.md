@@ -161,6 +161,44 @@ Other commands, run from `client/`:
 
 > **Windows note:** if `ng build` or `ng serve` crashes in Git Bash with `fatal error: all goroutines are asleep - deadlock!`, run it from PowerShell or Command Prompt instead.
 
+## Deploy for free
+
+The app deploys as **one service**: the NestJS server serves the Angular build and the API from the same address, so there is no CORS to set up and the calls socket works without extra settings. It runs on [Render](https://render.com)'s free plan with a free [MongoDB Atlas](https://www.mongodb.com/atlas) M0 database. Neither needs a credit card.
+
+To run the same thing on your own machine:
+
+```bash
+cd client && npm run build    # the server serves client/dist/client/browser when it exists
+cd ../server && npm run build && npm run start:prod
+```
+
+Then open <http://localhost:3000>.
+
+### 1. The database (MongoDB Atlas M0)
+
+1. Create a free account at [mongodb.com/atlas](https://www.mongodb.com/atlas), then create a cluster and choose **M0 (Free)**. Pick a region close to your Render region.
+2. Under **Database Access**, add a database user with a password. Use a generated password; symbols in a password have to be URL-encoded in the connection string.
+3. Under **Network Access**, add `0.0.0.0/0` (allow from anywhere). Render's free plan has no fixed IP address to allow instead. The database user's password protects the data.
+4. Under **Connect → Drivers**, copy the connection string. Add a database name after the host, e.g. `mongodb+srv://dialer:<password>@cluster0.abcde.mongodb.net/call-dialer?retryWrites=true&w=majority`.
+
+### 2. The app (Render free web service)
+
+1. Push this repository to GitHub (or GitLab).
+2. On Render, choose **New → Blueprint** and pick the repository. Render reads [`render.yaml`](render.yaml), which builds both apps, starts the server and checks `/api/health`. It also generates `JWT_SECRET` and sets `TRUST_PROXY=1`.
+3. When Render asks for the remaining values, fill them in:
+   - `MONGODB_URI`: the Atlas connection string from step 1.
+   - `CLIENT_ORIGIN`: the service's address, e.g. `https://dialer.onrender.com`. You'll see it on the service page once it's created; if you don't know it yet, set it afterwards under **Environment**.
+   - `TURN_URL`, `TURN_USERNAME`, `TURN_CREDENTIAL`: leave these empty unless you have a TURN relay (see below).
+4. The first build takes a few minutes. Then open the service's address and create an account. It's served over HTTPS, so microphone access, and with it calling, works.
+
+### What the free plans mean
+
+- **The service sleeps after 15 minutes without visitors.** The next visit wakes it, which takes about a minute. While it's asleep nobody is connected, so calls can't ring anyone. That's fine for a demo or a small group; a paid plan, or another host that keeps the server running, removes the delay.
+- **750 free hours a month** on Render: enough for one service running all month.
+- **Atlas M0** holds 512 MB, which is plenty for accounts, contacts and call history.
+- **Call audio costs nothing.** It goes directly between the two browsers and never through Render (see [How calling works](#how-calling-works-for-free)).
+- **TURN (optional).** Most calls connect with the free STUN servers alone. For callers behind very strict firewalls, you can run [coturn](https://github.com/coturn/coturn) on an always-free virtual machine (for example Oracle Cloud's free tier) and set the three `TURN_*` variables.
+
 ## Tests
 
 | What | Where | Run |
@@ -169,7 +207,7 @@ Other commands, run from `client/`:
 | API end to end: every endpoint and the calling protocol, against an in-memory MongoDB | `server/test/` | `cd server && npm run test:e2e` |
 | Unit tests | `server/src`, `client/src` | `npm test` in `server/` or `client/` |
 
-The full-app suite starts its own stack on separate ports: a throwaway in-memory MongoDB, the built API on 3399, and the **production build** of the client on 4399, served the way a static host serves it (with `/api` and the calls socket forwarded). So the tests check exactly what gets deployed. It never touches a database or dev server you are using. It drives the Chrome you have installed. Each call test uses two browser sessions with Chrome's fake microphone, and measures with WebRTC's own statistics that audio really flows both ways.
+The full-app suite starts its own copy of the app the way it is deployed: a throwaway in-memory MongoDB, and the built server on port 3399, serving the **production build** of the client and the API together. So the tests check exactly what gets deployed. It never touches a database or dev server you are using. It drives the Chrome you have installed. Each call test uses two browser sessions with Chrome's fake microphone, and measures with WebRTC's own statistics that audio really flows both ways.
 
 ```bash
 cd e2e
@@ -205,7 +243,7 @@ client/src/app/
 
 server/src/
 ├── main.ts, app.setup.ts   startup: /api prefix, security headers, CORS, input validation
-├── config/           environment variables, checked at startup
+├── config/           environment variables (checked at startup), serving the client build
 ├── common/           phone-number rules (same as the client), MongoDB helpers
 └── modules/
     ├── users/        User schema; look up a user by phone number
@@ -215,6 +253,7 @@ server/src/
     └── signaling/    socket.io gateway that sets up WebRTC calls between users
 server/test/          API end-to-end tests against an in-memory MongoDB
 e2e/                  full-app tests: client + API + MongoDB, driven in Chrome (Playwright)
+render.yaml           free deployment on Render (see Deploy for free)
 ```
 
 Components follow an atomic-design layout, from small to large: atoms → molecules → organisms → pages. State is held in Angular signals inside the services, and the pages only read from them. The services load the signed-in user's data from the API after login and clear it on logout.
