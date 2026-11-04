@@ -20,20 +20,8 @@
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
-    <script>
-      // Apply the saved theme (or the device's) before the app draws, so a reload never
-      // flashes the wrong one. ThemeService keeps it in sync afterwards.
-      (function () {
-        var choice = 'system';
-        try {
-          choice = JSON.parse(localStorage.getItem('dialer.theme')) || 'system';
-        } catch (e) {}
-        if (choice !== 'light' && choice !== 'dark') {
-          choice = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-        }
-        document.documentElement.dataset.theme = choice;
-      })();
-    </script>
+    <!-- Applies the saved theme before the app draws (see the file); not inline, for the CSP. -->
+    <script src="theme-init.js"></script>
   </head>
   <body>
     <app-root></app-root>
